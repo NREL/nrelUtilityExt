@@ -16,14 +16,15 @@ class Build : BuildPod
     summary = "Missing Axon Utility Functions"
     version = Version("0.9.0")
     meta    = [
-                "ext.name":    "utility",
-                "ext.icon24":  "fan://frescoRes/img/iconMissing24.png",
-                "ext.icon72":  "fan://frescoRes/img/iconMissing72.png",
-                "org.name":     "NREL",
-                "org.uri":      "https://www.nrel.gov/",
-                "proj.name":    "Missing Utilities",
-                "proj.uri":     "https://github.nrel.gov/sfrank1/utilityExt",
-                "license.name": "Commercial",
+                "ext.name":       "utility",
+                "ext.icon24":     "fan://frescoRes/img/iconMissing24.png",
+                "ext.icon72":     "fan://frescoRes/img/iconMissing72.png",
+                "org.name":       "NREL",
+                "org.uri":        "https://www.nrel.gov/",
+                "proj.name":      "Missing Utilities",
+                "proj.uri":       "https://github.nrel.gov/sfrank1/utilityExt",
+                "license.name":   "Commercial",
+                "skyspark.docExt": "true",
               ]
     depends = ["sys 1.0", "axon 3.0"]
     resDirs = [`locale/`,

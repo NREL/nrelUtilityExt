@@ -2,240 +2,27 @@
 // All Rights Reserved
 
 ---
-name:addTagsFromGrid
-func
-doc:
-  /***************************************************************************************************
-    addTagsFromGrid(recs, newTags, matchBy, testOnly)
-  
-    Description:
-      Adds new tags to a list of records from a grid and commits changed records to the Folio. Tags
-      are added by matching the 'matchBy' column of each record grid to the appropriate row of the
-      tag grid, then pulling over the new tags.
-  
-    Parameters:
-      recs: A grid of records to modify
-      tags: A grid of new tags to apply, with one column that define a unique match to recs
-      matchBy: Name of column to use for matching records to new tags
-      testOnly: If true, returns the records that would be written but does not actually write them to
-        the Folio (Default = false)
-  
-    Returns:
-      The grid of modified records
-  
-    Notes:
-      1. Any existing tags on the records take precedence over new tags applied by this function. For
-         instance, if the record already has a phase:"A" tag but the newTags grid specifies a new
-         phase:"B" tag, the existing phase:"A" tag will remain unchanged.
-  
-  ***************************************************************************************************/
-  
-  TO DO:
-    - Convert to new opts structure
-    - Move to new tagKitExt
-src:  
-  (recs, newTags, matchBy, testOnly:false) => do
-  
-    // Verify match column
-    if (recs.missing(matchBy)) throw "Record grid is missing match column \"" + matchBy + "\"."
-    if (newTags.missing(matchBy)) throw "Tag grid is missing match column \"" + matchBy + "\"."
-  
-    // Create updated records by combining original with newly added tags
-    recs = recs.map() r => do
-      // Get new tags
-      nt: newTags.find() tagRow => tagRow[matchBy] == r[matchBy]
-  
-      // Add to existing record
-      if (nt != null) r.dictJoin(nt, false) else r
-    end
-  
-    // If test mode, return now
-    if (testOnly) return recs
-  
-    // Commit updates
-    recs.each() r => commit(diff(r.toRecId.readById, r))
-  
-    // Re-read and return
-    recs.toRecIdList.readByIds
-  
-  end
----
-name:airTagList
-func
-doc:
-  /***************************************************************************************************
-    airTagList()
-  
-    Description:
-      Convenience function that returns a list of tag names associated with air measurements. Useful
-      for creating dynamic filters.
-  
-    Parameters:
-      None
-  
-    Returns:
-      A list of tag names
-  
-  ***************************************************************************************************/
-  
-    TO DO:
-    - Convert to new opts structure
-    - Move to new tagKitExt
-src:  
-  () => do
-    // List of tag names relevant to describing the location of air measurements
-    [
-      "discharge",
-      "entering",
-      "exhaust",
-      "leaving",
-      "mixed",
-      "outside",
-      "return",
-      "supply",
-      "zone"
-    ]
-  end
----
 name:arity
 func
 doc:
-  /***************************************************************************************************
-    arity(func)
-  
-    Description:
-      Determine the number of arguments in a function: convenience for params(func).size
-  
-    Parameters:
-      func: Function handle to evaluate
-  
-    Returns:
-      The number of arguments accepted by function 'func'
-  
-  ***************************************************************************************************/
+  Given a function name 'fn', return the number of arguments the function accepts.
 src:
-  (func) => params(func).size
----
-name:dictInnerJoin
-func
-doc:
-  /***************************************************************************************************
-    dictInnerJoin(a, b, checked)
-  
-    Description:
-      Performs an inner join on dicts a and b, returning only name-value pairs present in both dicts.
-  
-      - If checked is true, verifies that names included in both a and b have matching values, and
-        throws an error on mismatch.
-      - If checked is false, excludes name-value pairs with matching names but differing values.
-  
-    Parameters:
-      a: First dict
-      b: Second dict
-      checked: Whether to match on values as well as names (Default = true)
-  
-    Returns:
-      A combined dict that includes only name-value pairs present in both a and b.
-  
-    Notes:
-      1. Order of name-value pairs in output dict is not guaranteed to be consistent with either input
-         dict.
-  
-  ***************************************************************************************************/
-  
-  To Do:
-    - Rename to innerJoin
-    - Use merge()?
-    - Support both dicts and grids
-    - Rework; model on dplyr joins and this: https://skyfoundry.com/forum/topic/2401
-src:
-  (a, b, checked:true) => do
-    // Filter to common names
-    a = a.findAll() (v, n) => b.names.contains(n)
-    b = b.findAll() (v, n) => a.names.contains(n)
-  
-    // Value matching
-    if (checked) do
-      // Values must match
-      a.each() (v, n) => if (b[n] != v) throw "Values do not match for key \"" + n + "\"."
-    end else do
-      // Discard keys with mismatched values
-      a.each() (v, n) => if (b[n] != v) a = a.remove(n)
-    end
-  
-    // Return
-    return a
-  end
----
-name:dictJoin
-func
-doc:
-  /***************************************************************************************************
-    dictJoin(a, b, checked)
-  
-    Description:
-      Joins dicts a and b, including all names-value pairs from both dicts.
-  
-      - If checked is true, verifies that names included in both a and b have matching values, and
-        throws an error on mismatch.
-      - If checked is false, values from a override values from b.
-  
-    Parameters:
-      a: First dict
-      b: Second dict
-      checked: Whether to enforce value equivalence in overlapping name-value pairs (Default = true)
-  
-    Returns:
-      A combined dict that includes all name-value pairs from a and b
-  
-    Notes:
-      1. Order of name-value pairs in output dict is not guaranteed to be consistent with either input
-         dict.
-  
-  ***************************************************************************************************/
-   
-  To Do:
-    - Rename to outerJoin
-    - Use merge()?
-    - Support both dicts and grids
-    - Rework; model on dplyr joins and this: https://skyfoundry.com/forum/topic/2401
-src:
-  (a, b, checked:true) => do
-    // Join
-    b.names.each() n => do
-      if (checked and a.has(n) and a[n] != b[n]) throw "Values do not match for key \"" + n + "\"."
-      if (a.missing(n)) a = a.set(n, b[n])
-    end
-  
-    // Return
-    return a
-  end
+  (fn) => params(fn).size
 ---
 name:dictToFilter
 func
 doc:
-  /***************************************************************************************************
-    dictToFilter(d)
+  Transform the contents of a dict into a string compatible with `parseFilter`. The resulting
+  filter string matches records with tags that include all the name-value pairs in dict 'd'.
+
+  Notes
+  -----
   
-    Description:
-      Transform the contents of a dict into a string compatible with parseFilter(). The resulting
-      filter string matches records with tags that include all the name-value pairs in the dict.
-  
-    Parameters:
-      d: dict to transform to filter string
-  
-    Returns:
-      A string compatible with parseFilter()
-  
-    Notes:
-      1. All Axon data types are supported except dateTimes, which have no Axon literal.
-      2. Dicts that contain reserved keywords as names, such as "return", will not throw an error from
-         dictToFilter() but may cause downstream functions such as parseFilter() to fail.
-      3. Null values in 'd' will cause parseFilter() to fail downstream; use the utility function
-         removeNull() as needed to clean the arguments. (For efficiency, this function assumes that
-         its input is already clean.)
-  
-  ***************************************************************************************************/
+  1. All simple Axon data types are supported except dateTimes, which have no Axon literal.
+  2. Dicts that contain reserved keywords as names, such as "return", will not throw an error but
+     but may cause downstream functions such as `parseFilter` to fail.
+  3. Null values in 'd' will cause `parseFilter` to fail downstream; use the utility function
+     `removeNull` as needed to clean the input.
 src:
   (d) => do
     // Start filter string
@@ -259,211 +46,140 @@ src:
     s
   end
 ---
-name:elecMeterTagList
-func
-doc:
-  /***************************************************************************************************
-    elecMeterTagList()
-  
-    Description:
-      Convenience function that returns a list of tag names associated with measurement points for
-      electrical meters. Useful for creating dynamic filters.
-  
-    Parameters:
-      None
-  
-    Returns:
-      A list of tag names
-  
-  ***************************************************************************************************/
-  
-  To Do: Move to tagKitExt
-src:
-  () => do
-    // List of tag names relevant to electrical meter points
-    [
-      "ac",
-      "active",
-      "angle",
-      "apparent",
-      "charge",
-      "current",
-      "dc",
-      "demand",
-      "discharge",
-      "energy",
-      "export",
-      "imbalance",
-      "import",
-      "mag",
-      "net",
-      "pf",
-      "phase",
-      "power",
-      "reactive",
-      "supply",
-      "thd",
-      "total",
-      "volt"
-    ]
-  end
----
 name:exportFunctions
 doc:
-  /***************************************************************************************************
-    exportFunctions(funcs, filename)
+  Exports a grid of functions 'funcs' to a tagged record input/output (TRIO) file 'filename' for
+  reuse elsewhere. If missing, the "io/" prefix and ".trio" suffix are added to 'filename'
+  automatically.
   
-    Description:
-      Exports a grid of functions to a tagged record input/output (TRIO) file for reuse elsewhere.
+  Examples
+  --------
   
-    Parameters:
-      funcs: A dict, list, or grid of function records to export
-      filename: The name of the file to write
-  
-    Returns:
-      A grid containing the exported functions
-  
-    Notes:
-      1. To import the exported functions to a different project, place the exported file in the
-         project's `io` directory and use:
-  
-           ioReadTrio(`io/FILENAME.trio`).each f => commit(diff(null, f, {add}))
-  
-         where FILENAME is the name of the file you wish to import.
-  
-  ***************************************************************************************************/
-  
-  To Do: Create a corresponding importFunctions() function
+  readAll(func).exportFunctions("myFunctions")  >> Writes to `io/myFunctions.trio`
 src:
   (funcs, filename) => do
+    // Check filename
+    if (not(filename.toStr.startsWith("io/")) filename = "io/" + filename
+    if (not(filename.toStr.lower.endsWith(".trio")) filename = filename + ".trio"
+    
+    // Write output
     funcs.toGrid
       .map(f => f.remove("id").remove("mod"))
       .sort("name")
-      .ioWriteTrio(`io/` + filename)
+      .ioWriteTrio(filename.parseUri)
   end
 ---
-name:hisConvertUnits
+name:importFunctions
+doc:
+  Imports a tagged record input/output (TRIO) file of functions (e.g. exported using
+  `exportFunctions`) and commits them to the Folio. If missing, the "io/" prefix and ".trio" suffix
+  are added to 'filename' automatically.
+  
+  Examples
+  --------
+  
+  importFunctions("myFunctions")  >> Reads from `io/myFunctions.trio`
+src:
+  (funcs, filename) => do
+    // Check filename
+    if (not(filename.toStr.startsWith("io/")) filename = "io/" + filename
+    if (not(filename.toStr.lower.endsWith(".trio")) filename = filename + ".trio"
+    
+    // Read and commit functions
+    ioReadTrio(`io/FILENAME.trio`)
+      .findAll(rec => rec.has("func"))
+      .each() f => commit(diff(null, f, {add}))
+  end
+---
+name:intersect
 func
 doc:
-  /***************************************************************************************************
-    hisConvertUnits(his, unit)
+  Returns the set intersection of two lists or dicts 'a' and 'b'. Behavior for dicts differs by
+  'checked':
   
-    Description:
-      Convenience function for history unit conversion.
+  - If 'checked' is *true*, verifies that keys included in both 'a' and 'b' have matching values,
+    and throws an error on mismatch.
+  - If 'checked' is *false*, excludes name-value pairs with matching keys but differing values.
+
+  Examples
+  --------
   
-    Parameters:
-      his: History on which to perform unit conversion
-      unit: New unit string or number with associated unit
-  
-    Returns:
-      Modified history
-  
-  ***************************************************************************************************/
+    intersect([1, 2, 3],[2, 3, 4])        >> [2, 3]
+    intersect({a, b}, {a, c})             >> {a}
+    intersect({a, b:1}, {a, b:1})         >> {a, b:1}
+    intersect({a, b:1}, {a, b:2})         >> error
+    intersect({a, b:1}, {a, b:2}, false)  >> {a}
 src:
-  (his, unit) => his.hisMap() v => v.to(unit)
+  (a, b, checked:true) => do
+    // Lists
+    if(a.isList and b.isList) do
+      return a.findAll(v => b.contains(v)).unique
+    
+    // Dicts
+    else if(a.isDict and b.isDict) do
+      // Common names
+      cn: a.names.findAll() n => b.names.contains(n)
+      
+      // Filter
+      a = a.findAll() (v, n) => cn.contains(n)
+      
+      // Value matching
+      if (checked) do
+        // Values must match
+        a.each() (v, n) => if (b[n] != v) throw "Values do not match for key \"" + n + "\"."
+      end else do
+        // Discard keys with mismatched values
+        a.each() (v, n) => if (b[n] != v) a = a.remove(n)
+      end
+      
+      // Return
+      return a
+    
+    // Other
+    else do
+      throw "Invalid arguments; need two lists or two dicts."
+    end
+  end
 ---
 name:isNA
 func
 doc:
-  /***************************************************************************************************
-    isNA(val)
-
-    Description:
-      Returns if val is equal to NA
-
-    Parameters:
-      val: List or dict to clean
-
-    Returns:
-      true if val is NA, false otherwise
-
-  ***************************************************************************************************/
+  Returns *true* if 'val' is equal to NA, *false* otherwise.
 src:
   (val) => val == na() 
 ---
 name:removeNA
 func
 doc:
-  /***************************************************************************************************
-    removeNA(x)
-
-    Description:
-      Convenience function to remove NA values from a list or dict.
-
-    Parameters:
-      x: List or dict to clean
-
-    Returns:
-      Modified list or dict with NA valued list elements or keys removed
-
-  ***************************************************************************************************/
+  Removes NA values from list or dict 'x'.
 src:
   (x) => x.findAll() v => v != na()
 ---
 name:removeNull
 func
 doc:
-  /***************************************************************************************************
-    removeNull(x)
-  
-    Description:
-      Convenience function to remove null values from a list or dict.
-  
-    Parameters:
-      x: List or dict to clean
-  
-    Returns:
-      Modified list or dict with null valued list elements or keys removed
-  
-  ***************************************************************************************************/
+  Removes null values from list or dict 'x'.
 src:
   (x) => x.findAll() v => v != null
 ---
 name:removeVal
 func
 doc:
-  /***************************************************************************************************
-    removeVal(x, val)
-  
-    Description:
-      Convenience function to remove element(s) from a list or dict by value
-  
-    Parameters:
-      x: List or dict to manipulate
-      val: Value to remove
-  
-    Returns:
-      Modified list or dict, with all elements that match the specified value removed
-  
-  ***************************************************************************************************/
+  Remove any elements from list or dict 'x' that equal 'val'.
 src:
   (x, val) => x.findAll() v => v != val
 ---
 name:replace2
 func
 doc:
-  /***************************************************************************************************
-    replace2(val, from, to)
+  Convenience wrapper for `replace` that also allows processing of URIs or dicts:
   
-    Description:
-      Convenience wrapper for built-in replace() that also allows URIs or dicts:
-      
-      - If 'val' is a URI, it is coerced to string, modified, and re-parsed as a URI
-      - If 'val' is a dict or list, all its string and URI elements have the replacement applied
+  - If 'val' is a string, identical to `replace`
+  - If 'val' is a URI, it is coerced to string, modified, and re-parsed as a URI
+  - If 'val' is a dict or list, all its string and URI elements have the replacement applied 
   
-    Parameters:
-      val: String, URI, or dict to modify
-      from: String to replace
-      to: Replacement value
-  
-    Returns:
-      Modified string or URI, or modified dict/list with all string and URI values modified
-      
-    Notes:
-      1. For dicts and lists, the string replacement is not recursive. (For instance, the replacement
-         will not reach inside of dicts nested within lists.)
-  
-  ***************************************************************************************************/
+  For dicts and lists, the string replacement is not recursive. (For instance, the replacement will
+  not reach inside of dicts nested within lists.)
 src:
   (val, from, to) => do
     // Convenience URI replacement function
@@ -485,22 +201,43 @@ src:
     end
   end
 ---
+name:setDiff
+func
+doc:
+  Returns the set difference of two lists or dicts 'a' and 'b': all elements of 'a' that are not in
+  'b'.
+  
+  For dicts, elements for removal are checked by name only (values are ignored, including for
+  keys mapped to 'Remove.val').
+
+  Examples
+  --------
+  
+    setDiff([1, 2, 3],[2, 3, 4])  >> [1]
+    setDiff({a, b}, {a, c})       >> {b}
+    setDiff({a, b:1}, {b:2})      >> {a}
+    setDiff({a, b:1}, {-b})       >> {a}
+src:
+  (a, b) => do
+    // Lists
+    if(a.isList and b.isList) do
+      return a.findAll(v => not(b.contains(v))).unique
+    
+    // Dicts
+    else if(a.isDict and b.isDict) do
+      return a.findAll() (v, n) => not(b.has(n))
+    
+    // Other
+    else do
+      throw "Invalid arguments; need two lists or two dicts."
+    end
+  end
+---
 name:stringToList
 func
 doc:
-  /***************************************************************************************************
-    stringToList(s)
-  
-    Description:
-      Converts a string to a list using eval. Automatically adds brackets [ ] if needed.
-  
-    Parameters:
-      s: String to be listified
-  
-    Returns:
-      A list based on the contents of the string
-  
-  ***************************************************************************************************/
+  Converts a string of comma-separated values to a list using `eval`. Automatically adds brackets
+  '[' ']' if needed.
 src:
   (s) => do
     // Handle brackets
@@ -511,210 +248,46 @@ src:
     eval(s)
   end
 ---
-name:toNeighborPoint
+name:union
 func
-dpc:
-  /***************************************************************************************************
-    toNeighborPoint(rec, tags, matchBy, checked)
+doc:
+  Returns the set union of two lists or dicts 'a' and 'b'. Behavior for dicts differs by
+  'checked':
   
-    Description:
-      Using tags, find a unique neighboring point on the same parent equip that represents a related
-      quantity. For example, given a 'mixed' 'air' 'temp' 'sensor', locate the 'mixed' 'air'
-      'humidity' 'sensor'.
+  - If 'checked' is *true*, verifies that keys included in both 'a' and 'b' have matching values,
+    and throws an error on mismatch.
+  - If 'checked' is *false*, values from 'a' override values from 'b'. This is similar to
+    'merge(b, a)' except that keys not mapped to 'Remove.val' always take precedence.
+
+  Examples
+  --------
   
-    Parameters:
-      rec: The record to use as a starting point for the search
-      tags: Dict of tags to that specify the type of neighboring point; see Details
-      matchBy: List of tag names to use for relative matching to 'rec'; see Details
-      checked: Whether to enforce a unique match to a neighboring point (default = true)
-  
-    Returns:
-      A matching neighboring point record
-  
-    Details:
-      The toNeighborPoint() function locates neighboring points based on two pieces of information:
-  
-        1. 'tags' specifies the tag(s) that distinguish the neighboring point from the initial point,
-           i.e. tags that *differ* between the two records.
-        2. 'matchBy' specifies the tag(s) that may be *similar* between the two records and should be
-           checked to determine that the two records are truly related.
-  
-      The 'matchBy' argument gives a superset of the tags that may actually match between the two
-      records, and can therefore be used without change for a variety of matches. For example,
-      consider the arguments:
-  
-        tags = {humidity, sensor}
-        matchBy = ["air", "discharge", "exhaust", "mixed", "outside", "return", "zone"]
-  
-      With these 'tag' and 'matchBy' arguments...
-  
-        - Given a 'rec' argument with tags 'discharge', 'air', and 'temp' toNeighborPoint() will
-          return a matching 'discharge' 'air' 'humidity' 'sensor' point record.
-        - Given a 'rec' argument with tags 'exhaust', 'air', and 'temp' toNeighborPoint() will
-          instead return a matching 'exhaust' 'air' 'humidity' 'sensor' point record.
-  
-      Similarly, the same 'tag' and 'matchBy' arguments will automatically map air temperature to
-      humidity for 'mixed', 'outside', 'return', and 'zone' sensors. This flexible matching enables
-      adaptive programming in history functions.
-  
-    Notes:
-      1. If checked = true and a unique match to a neighboring point cannot be made, either because no
-         such match exists or because multiple potential matches exist, then the function throws an
-         error. If checked = false, then the first matching point is returned (or null if no match).
-      2. For 'tags', neighboring points must match on both keys and values for each tag. For instance,
-         phase:"A" requires matching on both key 'phase' and value "A". For 'matchBy', the values in
-         'rec' must match the values of the corresponding tags on the target point.
-      3. If using helper functions like airTagList() or waterTagList() to populate 'matchBy', remember
-         to also add "sensor", "sp", or "cmd" to either 'matchBy' or 'tags' as appropriate.
-      4. Null values in the arguments will cause parseFilter() to fail downstream; use the utility
-         function removeNull() as needed to clean the arguments. (For efficiency, this function
-         assumes that its input arguments are already clean.)
-  
-  ***************************************************************************************************/
+    union([1, 2, 3],[2, 3, 4])        >> [1, 2, 3, 4]
+    union({a, b}, {a, c})             >> {a, b, c}
+    union({a, b}, {-b, c}, false)     >> {a, b, c}
+    union({a, b:1}, {a, b:1})         >> {a, b:1}
+    union({a, b:1}, {a, b:2})         >> error
+    union({a, b:1}, {a, b:2}, false)  >> {a, b:1}
 src:
-  (rec, tags, matchBy, checked:true) => do
-    // Create search filter
-    if (matchBy == null or matchBy.isEmpty) do
-      filt: {}
-    else do
-      filt: rec.findAll() (v, n) => matchBy.contains(n)
-    end
-  
-    // Join to target tag info
-    filt = tags.dictJoin(filt)
-  
-    // Check for unique match
-    if (checked) do
-      np: readAll(point and equipRef==rec->equipRef and filt.dictToFilter.parseFilter).size
-      if (np > 1) do
-        throw "Cannot determine unique match for neighboring point."
-      else if (np == 0) do
-        throw "No matching neighboring point found for tags provided."
+  (a, b, checked:true) => do
+    // Lists
+    if(a.isList and b.isList) do
+      return a.addAll(b).unique
+    
+    // Dicts
+    else if(a.isDict and b.isDict) do
+      // Value matching
+      if (checked) do
+        b.names.each() n => do
+          if (a.has(n) and a[n] != b[n]) throw "Values do not match for key \"" + n + "\"."
+        end
       end
-    end
-  
-    // Return target (or null if no match and checked = false)
-    read(point and equipRef==rec->equipRef and filt.dictToFilter.parseFilter, false)
-  end
-  
----
-name:toNeighborPoints
-func
-doc:
-  /***************************************************************************************************
-    toNeighborPoints(rec, tags, matchBy, checked)
-  
-    Description:
-      Using tags, find all neighboring points on the same parent equip that represent a related
-      quantity. For example, given a 'mixed' 'air' 'temp' 'sensor', locate all 'mixed' 'air'
-      'humidity' 'sensor's.
-  
-    Parameters:
-      rec: The record to use as a starting point for the search
-      tags: Dict of tags to that specify the type of neighboring point; see Details
-      matchBy: List of tag names to use for relative matching to 'rec'; see Details
-      checked: Whether to return an error if no neighboring points found (default = true)
-  
-    Returns:
-      A matching neighboring point record
-  
-    Details:
-      The toNeighborPoints() function locates neighboring points based on two pieces of information:
-  
-        1. 'tags' specifies the tag(s) that distinguish the neighboring point from the initial point,
-           i.e. tags that *differ* between the original and target records.
-        2. 'matchBy' specifies the tag(s) that may be *similar* between the original and target
-           records and should be checked to determine that the two records are truly related.
-  
-      The 'matchBy' argument gives a superset of the tags that may actually match between the original
-      and target records, and can therefore be used without change for a variety of matches. For
-      example, consider the arguments:
-  
-        tags = {humidity, sensor}
-        matchBy = ["air", "discharge", "exhaust", "mixed", "outside", "return", "zone"]
-  
-      With these 'tag' and 'matchBy' arguments...
-  
-        - Given a 'rec' argument with tags 'discharge', 'air', and 'temp' toNeighborPoints() will
-          return any matching 'discharge' 'air' 'humidity' 'sensor' point records.
-        - Given a 'rec' argument with tags 'exhaust', 'air', and 'temp' toNeighborPoints() will
-          instead return any matching 'exhaust' 'air' 'humidity' 'sensor' point records.
-  
-      Similarly, the same 'tag' and 'matchBy' arguments will automatically map air temperature to
-      humidity for 'mixed', 'outside', 'return', and 'zone' sensors. This flexible matching enables
-      adaptive programming in history functions.
-  
-    Notes:
-      1. If checked = true and no match match to neighboring points can be made, then the function
-         throws an error. If checked = false and there is no match, the function returns null.
-      2. For 'tags', neighboring points must match on both keys and values for each tag. For instance,
-         phase:"A" requires matching on both key 'phase' and value "A". For 'matchBy', the values in
-         'rec' must match the values of the corresponding tags on the target points.
-      3. If using helper functions like airTagList() or waterTagList() to populate 'matchBy', remember
-         to also add "sensor", "sp", or "cmd" to either 'matchBy' or 'tags' as appropriate.
-      4. Null values in the arguments will cause parseFilter() to fail downstream; use the utility
-         function removeNull() as needed to clean the arguments. (For efficiency, this function
-         assumes that its input arguments are already clean.)
-  
-  ***************************************************************************************************/
-src:
-  (rec, tags, matchBy, checked:true) => do
-    // Create search filter
-    if (matchBy == null or matchBy.isEmpty) do
-      filt: {}
+      
+      // Merge, without dropping values
+      return merge(merge(a, b), merge(b, a))
+    
+    // Other
     else do
-      filt: rec.findAll() (v, n) => matchBy.contains(n)
-    end
-  
-    // Join to target tag info
-    filt = tags.dictJoin(filt)
-  
-    // Read matching points
-    p: readAll(point and equipRef==rec->equipRef and filt.dictToFilter.parseFilter)
-  
-    // Check and return
-    if (checked and p.isEmpty) do
-      throw "No matching neighboring points found for tags provided."
-    else if (p.isEmpty) do
-      return null
-    else do
-      return p
+      throw "Invalid arguments; need two lists or two dicts."
     end
   end
-  
----
-name:waterTagList
-func
-doc:
-  /***************************************************************************************************
-    waterTagList()
-  
-    Description:
-      Convenience function that returns a list of tag names associated with water measurements. Useful
-      for creating dynamic filters.
-  
-    Parameters:
-      None
-  
-    Returns:
-      A list of tag names
-  
-  ***************************************************************************************************/
-  
-  To Do: Move to tagKitExt
-src:
-  () => do
-    // List of tag names relevant to describing the location of water measurements
-    [
-      "blowdown",
-      "chilled",
-      "condensate",
-      "condenser",
-      "domestic",
-      "entering",
-      "hot",
-      "leaving",
-      "makeup"
-    ]
-  end
-  

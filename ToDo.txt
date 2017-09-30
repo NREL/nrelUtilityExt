@@ -1,5 +1,4 @@
 1. Move out tag-related functions
-2. Remodel dict join functions based on union, intersect, setdiff from R
-3. Create grid join functions based on dplyr two-table verbs:
+2. Create grid join functions based on dplyr two-table verbs:
    https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html
    http://stat545.com/bit001_dplyr-cheatsheet.html

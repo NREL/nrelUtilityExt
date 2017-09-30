@@ -1,17 +1,17 @@
-Overview
-********
+Overview [#over]
+****************
 
 The utility extension provides a variety of missing utility functions for the Axon programming
 language.
 
-Set Operations
-**************
+Set Operations [#setops]
+************************
 
 The `union`, `intersect`, and `setDiff` functions provide set operations for lists and dicts modeled
 on the equivalent functions in the [R programming language]`https://www.r-project.org/`. They
 complement the core function `merge`.
 
-SQL-Style Grid Joins
-********************
+SQL-Style Grid Joins [#joins]
+*****************************
 
 To Document

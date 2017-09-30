@@ -47,6 +47,7 @@ src:
   end
 ---
 name:exportFunctions
+func
 doc:
   Exports a grid of functions 'funcs' to a tagged record input/output (TRIO) file 'filename' for
   reuse elsewhere. If missing, the "io/" prefix and ".trio" suffix are added to 'filename'
@@ -55,12 +56,12 @@ doc:
   Examples
   --------
   
-  readAll(func).exportFunctions("myFunctions")  >> Writes to `io/myFunctions.trio`
+    readAll(func).exportFunctions("myFunctions")  >> Writes to `io/myFunctions.trio`
 src:
   (funcs, filename) => do
     // Check filename
-    if (not(filename.toStr.startsWith("io/")) filename = "io/" + filename
-    if (not(filename.toStr.lower.endsWith(".trio")) filename = filename + ".trio"
+    if (not(filename.toStr.startsWith("io/"))) filename = "io/" + filename
+    if (not(filename.toStr.lower.endsWith(".trio"))) filename = filename + ".trio"
     
     // Write output
     funcs.toGrid
@@ -70,6 +71,7 @@ src:
   end
 ---
 name:importFunctions
+func
 doc:
   Imports a tagged record input/output (TRIO) file of functions (e.g. exported using
   `exportFunctions`) and commits them to the Folio. If missing, the "io/" prefix and ".trio" suffix
@@ -78,15 +80,15 @@ doc:
   Examples
   --------
   
-  importFunctions("myFunctions")  >> Reads from `io/myFunctions.trio`
+    importFunctions("myFunctions")  >> Reads from `io/myFunctions.trio`
 src:
-  (funcs, filename) => do
+  (filename) => do
     // Check filename
-    if (not(filename.toStr.startsWith("io/")) filename = "io/" + filename
-    if (not(filename.toStr.lower.endsWith(".trio")) filename = filename + ".trio"
+    if (not(filename.toStr.startsWith("io/"))) filename = "io/" + filename
+    if (not(filename.toStr.lower.endsWith(".trio"))) filename = filename + ".trio"
     
     // Read and commit functions
-    ioReadTrio(`io/FILENAME.trio`)
+    ioReadTrio(filename.parseUri)
       .findAll(rec => rec.has("func"))
       .each() f => commit(diff(null, f, {add}))
   end

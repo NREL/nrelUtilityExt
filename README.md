@@ -50,8 +50,8 @@ SkySpark.
 Help
 ----
 
-Function help is available in the SkySpark *Help* app under *util* or within the help interface in
-the *Func* app.
+Function help is available in the SkySpark *Help* app under *utility* or within the help interface
+in the *Func* app.
 
 License
 -------

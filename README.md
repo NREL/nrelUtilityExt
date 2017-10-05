@@ -26,8 +26,8 @@ Installation
 ------------
 
 Select a set of installation instructions below that corresponds to how you obtained the
-**utilityExt** extension. Following installation, you must enable the *Utility* extension in *Exts*
-tab of the SkySpark *Settings* app within each project that needs access to the functions.
+**utilityExt** extension. Following installation, you must enable the *Utility* extension in the
+*Exts* tab of the SkySpark *Settings* app within each project that needs access to the functions.
 
 ### From Source ###
 

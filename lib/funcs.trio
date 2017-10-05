@@ -93,6 +93,13 @@ src:
       .each() f => commit(diff(null, f, {add}))
   end
 ---
+name:in
+func
+doc:
+  Convenience for 'b.contains(a)'; see `contains`.
+src:
+  (a, b) => b.contains(a)
+---
 name:intersect
 func
 doc:
@@ -171,10 +178,27 @@ doc:
 src:
   (x, val) => x.findAll() v => v != val
 ---
+name:rep
+func
+doc:
+  Replicate the value 'x' the specified number of 'times'. Returns a list.
+  
+  Examples
+  --------
+  
+    rep(1, 2)               >> [1,1]
+    rep("A", 3).concat("")  >> "AAA"
+src:
+  (x, times) => do
+    out: []
+    each(1..times, i => out = out.add(x))
+    return out
+  end
+---
 name:replace2
 func
 doc:
-  Convenience wrapper for `replace` that also allows processing of URIs or dicts:
+  Convenience wrapper for `replace` that also allows processing of URIs or dicts.
   
   - If 'val' is a string, identical to `replace`
   - If 'val' is a URI, it is coerced to string, modified, and re-parsed as a URI
@@ -235,6 +259,24 @@ src:
     end
   end
 ---
+name:stringToDict
+func
+doc:
+  Converts a string of comma-separated values to a dict using `eval`. Automatically adds brackets
+  '[' ']' if needed.
+src:
+  (s) => do
+    // Trim whitespace
+    s = s.trim
+    
+    // Handle brackets
+    if (not s.startsWith("{")) s = "{" + s
+    if (not s.endsWith("}")) s = s + "}"
+
+    // Eval
+    eval(s)
+  end
+---
 name:stringToList
 func
 doc:
@@ -242,12 +284,75 @@ doc:
   '[' ']' if needed.
 src:
   (s) => do
+    // Trim whitespace
+    s = s.trim
+    
     // Handle brackets
     if (not s.startsWith("[")) s = "[" + s
     if (not s.endsWith("]")) s = s + "]"
   
     // Eval
     eval(s)
+  end
+---
+name:normalizeDelim
+func
+doc:
+  Normalize delimiters in a string 's' by converting to commas. Supports escaping:
+  
+  - Unescaped instances of 'delim' are changed to commas.
+  - Escaped instances of 'delim' (those prefixed by '\') are unchanged but have escape character
+    stripped.
+    
+  If escaped delimiters are included, this function is recursive. Use with caution for very long
+  input strings, as stack overflow errors can occur.
+  
+  Examples
+  --------
+  
+  Raw string literals are used in these examples to avoid the double backslash.
+  
+    r"a;b".normalizeDelim(";")     >> "a,b"
+    r"a;b\;c".normalizeDelim(";")  >> "a,b;c"
+    r"\  1 2".normalizeDelim(" ")  >> " ,1,2"
+  
+src:
+  (s, delim) => do 
+    // Check delimiter size
+    if (delim.size > 1) throw "delim must be a single character."
+    
+    // Check for the simple case
+    if (not(s.contains("\\" + delim))) return s.replace(delim, ",")
+    
+    // Recursive delimiter replacement
+    replaceDelim: (string, offset:0) => do
+      // Find index of next delimiter
+      i: index(string, delim, offset)
+      
+      // Return if done replacing
+      if (i == null) return string
+      
+      // Split string at delimiter
+      s1: if (i > 0) string[0..(i-1)] else ""
+      s2: string[(i+1)..-1]
+      
+      // Recombine
+      if (s1.endsWith("\\")) do
+        // Escaped delimiter
+        string = s1[0..-2] + delim + s2
+        i = i - 1
+        
+      else do
+        // Unescaped delimiter
+        string = s1 + "," + s2
+      end
+      
+      // Recursion
+      replaceDelim(string, i+1)
+    end
+    
+    // Apply replacement
+    replaceDelim(s)
   end
 ---
 name:union

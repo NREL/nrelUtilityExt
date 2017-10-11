@@ -70,6 +70,60 @@ src:
       .ioWriteTrio(filename.parseUri)
   end
 ---
+name:hasAll
+func
+doc:
+  Returns *true* if 'x' has all the elements in 'names'.
+  
+  - For dicts, search by key names
+  - For grids, search by column names
+src:
+  (x, names) => do
+    // Ensure names is a list
+    if (not(names.isList)) throw "'names' must be a list of strings."
+    
+    // On any missing name, return false
+    if (x.isGrid) do
+      out: names.eachWhile() n => if (n.in(x.colNames)) null else false
+    
+    else if (x.isDict) do
+      out: names.eachWhile() n => if (x.has(n)) null else false
+    
+    else do
+      throw "'x' must be a dict or grid."
+    end
+    
+    // Return: null => true, false => false
+    if (out == null) return true else return false
+  end
+---
+name:hasAny
+func
+doc:
+  Returns *true* if 'x' has any of the elements in 'names'.
+  
+  - For dicts, search by key names
+  - For grids, search by column names
+src:
+  (x, names) => do
+    // Ensure names is a list
+    if (not(names.isList)) throw "'names' must be a list of strings."
+    
+    // On any matched name, return true
+    if (x.isGrid) do
+      out: names.eachWhile() n => if (n.in(x.colNames)) true else null
+    
+    else if (x.isDict) do
+      out: names.eachWhile() n => if (x.has(n)) true else null
+    
+    else do
+      throw "'x' must be a dict or grid."
+    end
+    
+    // Return: true => true, null => false
+    if (out == null) return false else return true
+  end
+---
 name:importFunctions
 func
 doc:

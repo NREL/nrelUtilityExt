@@ -14,4 +14,64 @@ complement the core function `merge`.
 SQL-Style Grid Joins [#joins]
 *****************************
 
-To Document
+The Utility extension includes a set of functions that implement SQL-style joins for grids, modeled
+closely on the join functions included in the
+[dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` package for R. Each
+join function has the general form '*Join(a, b, by, opts)', in which 'a' and 'b' are grids to join,
+'by' specifies the column(s) to use to join the grids, and 'opts' is a dict of control options.
+
+Join Types [#jointypes]
+=======================
+
+Six types of joins are available:
+
+- `innerJoin`: Returns all rows from 'a' where there are matching values in 'b' and all columns from
+  'a' and 'b'
+- `leftJoin`: Returns all rows from 'a' and all columns from 'a' and 'b'
+- `rightJoin`: Returns all rows from 'b' and all columns from 'a' and 'b'
+- `fullJoin`: Returns all rows and columns from both 'a' and 'b'
+- `semiJoin`: Returns all rows from 'a' where there are matching values in 'b', keeping columns from
+  'a' only
+- `antiJoin`: Returns all rows from 'a' where there are *not* matching values in 'b', keeping
+  columns from 'a' only
+
+Parameters [#joinparams]
+========================
+
+The '*Join' functions accept the following parameters:
+
+- **a**, **b**: Grids to join
+- **by**: Columns to join by. If 'by' is *null* (the default), then '*Join' will perform a natural
+  join, using columns with names common to both 'a' and 'b'. 'by' may also be:
+  - A string specifying a single common column name
+  - A list of strings specifying multiple common column names
+  - A dict in the form '{x:y, ...}' where each key name 'x' is a column name in 'a' and each key
+    value 'y' (which must be a string) is a corresponding column name in 'b'
+- **opts:** A dict of control options; see [Options]`ext-utility::doc#joinopts`
+    
+Options [#joinopts]
+===================
+
+The '*Join' functions support the following options:
+
+- 'keep': String specifying how to handle conflicting values in non-joined duplicate columns in
+  'a' and 'b':
+  
+  - '"a"': Values from 'a' overwrite values from 'b'
+  - '"b"': Values from 'b' overwrite values from 'a'
+  - '"both"': Keeps values from both 'a' and 'b', disambiguated by suffix
+  - '"neither"' or '"drop"': Drops keys with conflicting values (replaces with *null*)
+  - '"na"': Replaces conflicting values with *NA*
+  
+  The default is '"both"'.
+- 'suffix': When 'keep == "both"', specifies suffixes to use to disambiguate non-joined duplicate
+  columns in 'a' and 'b'. May be:
+  
+  - A list of strings of length 2, corresponding to suffixes for columns in 'a' and 'b'
+  - A dict with key names 'a' and 'b', corresponding to suffixes for columns in 'a' and 'b'
+  
+  The default suffixes are '"a"' and '"b"'.
+
+Examples [#joinexamples]
+========================
+

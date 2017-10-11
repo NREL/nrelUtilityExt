@@ -2,6 +2,19 @@
 // All Rights Reserved
 
 ---
+name:antiJoin
+func
+doc:
+  Returns all rows from 'a' where there are *not* matching values in 'b', keeping columns from 'a'
+  only.
+  
+  'antiJoin' is one of six SQL-style joins modeled on the two-table verbs in the
+  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
+  more information, including syntax for 'by' and valid options for 'opts', see the
+  [join documentation]`doc#joins`.
+src:
+  (a, b, by:null, opts:{}) => "Hello World!"  
+---
 name:arity
 func
 doc:
@@ -51,7 +64,7 @@ func
 doc:
   Exports a grid of functions 'funcs' to a tagged record input/output (TRIO) file 'filename' for
   reuse elsewhere. If missing, the "io/" prefix and ".trio" suffix are added to 'filename'
-  automatically.
+  automatically. See also `importFunctions`. 
   
   Examples
   --------
@@ -69,6 +82,19 @@ src:
       .sort("name")
       .ioWriteTrio(filename.parseUri)
   end
+---
+name:fullJoin
+func
+doc:
+  Returns all rows and columns from both 'a' and 'b'. Rows in 'a' with no match in 'b' will have
+  missing entries in the columns joined from 'b', and vice versa.
+  
+  'fullJoin' is one of six SQL-style joins modeled on the two-table verbs in the
+  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
+  more information, including syntax for 'by' and valid options for 'opts', see the
+  [join documentation]`doc#joins`.
+src:
+  (a, b, by:null, opts:{}) => "Hello World!"  
 ---
 name:hasAll
 func
@@ -127,9 +153,9 @@ src:
 name:importFunctions
 func
 doc:
-  Imports a tagged record input/output (TRIO) file of functions (e.g. exported using
-  `exportFunctions`) and commits them to the Folio. If missing, the "io/" prefix and ".trio" suffix
-  are added to 'filename' automatically.
+  Imports a tagged record input/output (TRIO) file of functions and commits them to the Folio.
+  If missing, the "io/" prefix and ".trio" suffix are added to 'filename' automatically. See also
+  `exportFunctions`. 
   
   Examples
   --------
@@ -153,6 +179,19 @@ doc:
   Convenience for 'b.contains(a)'; see `contains`.
 src:
   (a, b) => b.contains(a)
+---
+name:innerJoin
+func
+doc:
+  Returns all rows from 'a' where there are matching values in 'b' and all columns from 'a' and 'b'.
+  If there are multiple matches between 'a' and 'b', all combinations of the matches are returned.
+  
+  'innerJoin' is one of six SQL-style joins modeled on the two-table verbs in the
+  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
+  more information, including syntax for 'by' and valid options for 'opts', see the
+  [join documentation]`doc#joins`.
+src:
+  (a, b, by:null, opts:{}) => "Hello World!"  
 ---
 name:intersect
 func
@@ -210,6 +249,20 @@ doc:
   Returns *true* if 'val' is equal to NA, *false* otherwise.
 src:
   (val) => val == na() 
+---
+name:leftJoin
+func
+doc:
+  Returns all rows from 'a' and all columns from 'a' and 'b'. Rows in 'a' with no match in 'b' will
+  have missing entries in the columns joined from 'b'. If there are multiple matches between 'a' and
+  'b', all combinations of the matches are returned.
+  
+  'leftJoin' is one of six SQL-style joins modeled on the two-table verbs in the
+  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
+  more information, including syntax for 'by' and valid options for 'opts', see the
+  [join documentation]`doc#joins`.
+src:
+  (a, b, by:null, opts:{}) => "Hello World!"  
 ---
 name:removeNA
 func
@@ -280,6 +333,33 @@ src:
       end
     end
   end
+---
+name:rightJoin
+func
+doc:
+  Returns all rows from 'b' and all columns from 'a' and 'b'. Rows in 'b' with no match in 'a' will
+  have missing entries in the columns joined from 'a'. If there are multiple matches between 'a' and
+  'b', all combinations of the matches are returned.
+  
+  'rightJoin' is one of six SQL-style joins modeled on the two-table verbs in the
+  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
+  more information, including syntax for 'by' and valid options for 'opts', see the
+  [join documentation]`doc#joins`.
+src:
+  (a, b, by:null, opts:{}) => "Hello World!"  
+---
+name:semiJoin
+func
+doc:
+  Returns all rows from 'a' where there are matching values in 'b', keeping columns from 'a' only.
+  Differs from `innerJoin` in that it will never duplicate rows of 'a'.
+  
+  'semiJoin' is one of six SQL-style joins modeled on the two-table verbs in the
+  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
+  more information, including syntax for 'by' and valid options for 'opts', see the
+  [join documentation]`doc#joins`.
+src:
+  (a, b, by:null, opts:{}) => "Hello World!"  
 ---
 name:setDiff
 func

@@ -71,7 +71,138 @@ The '*Join' functions support the following options:
   - A dict with key names 'a' and 'b', corresponding to suffixes for columns in 'a' and 'b'
   
   The default suffixes are '"a"' and '"b"'.
+  
+Notes [#joinnotes]
+==================
 
+1. If 'by' is not *null*, there is a potential for non-joined duplicate columns between grids 'a'
+   and 'b'. In the joined grid, some rows may have conflicting values in these columns, that is, 
+   values for the same key (column) that differ between 'a' and 'b'. The 'keep'
+   [option]`ext-utility::doc#joinopts` governs what happens when there is such a conflict. If
+   instead either 'a' or 'b' is simply *missing* the duplicate key, then there is no conflict: the
+   value from the other grid is included in the output.
+2. Output column ordering is always all columns of 'a' followed by any new columns from 'b'.
+  
 Examples [#joinexamples]
 ========================
 
+Consider two grids 'a' and 'b':
+
+'a':              
+  
+  name age hometown state
+  ---- --- -------- -----
+  Bob   63 Chicago  IL
+  Jane  41 New York NY
+  Nico  25 Portland ME
+
+'b':
+
+  hometown state population
+  -------- ----- ----------
+  New York NY     8,175,133
+  Denver   CO       600,158
+  Portland OR       583,776
+  Portland ME        66,093
+
+For these example grids, natural joins will use "hometown" and "state" as the 'by' columns.
+  
+Regular Joins [#joinexamplesregular]
+------------------------------------
+
+'innerJoin(a, b)':
+
+  name age hometown state population
+  ---- --- -------- ----- ----------
+  Jane  41 New York NY     8,175,133
+  Nico  25 Portland ME        66,093  
+
+'leftJoin(a, b)':
+
+  name age hometown state population
+  ---- --- -------- ----- ----------
+  Bob   63 Chicago  IL
+  Jane  41 New York NY     8,175,133
+  Nico  25 Portland ME        66,093  
+
+'rightJoin(a, b)':
+
+  name age hometown state population
+  ---- --- -------- ----- ----------
+  Jane  41 New York NY     8,175,133
+  Nico  25 Portland ME        66,093
+           Denver   CO       600,158
+           Portland OR       583,776
+
+'fullJoin(a, b)':
+
+  name age hometown state population
+  ---- --- -------- ----- ----------
+  Bob   63 Chicago  IL
+  Jane  41 New York NY     8,175,133
+  Nico  25 Portland ME        66,093
+           Denver   CO       600,158
+           Portland OR       583,776
+  
+Partial Joins [#joinexamplespartial]
+------------------------------------
+
+'semiJoin(a, b)':
+
+  name age hometown state
+  ---- --- -------- -----
+  Jane  41 New York NY   
+  Nico  25 Portland ME     
+
+'antiJoin(a, b)':
+
+  name age hometown state
+  ---- --- -------- -----
+  Bob   63 Chicago  IL  
+  
+Modifying Join Columns [#joinexamplesby]
+----------------------------------------
+
+Things get more interesting if we omit "state" from the join columns.
+
+'innerJoin(a, b, "hometown")':
+
+  name age hometown state.a state.b population
+  ---- --- -------- ------- ------- ----------
+  Jane  41 New York NY      NY       8,175,133
+  Nico  25 Portland ME      OR         583,776
+  Nico  25 Portland ME      ME          66,093  
+
+*By default, 'keep == "both"'*
+
+'innerJoin(a, b, "hometown", {suffix:["person","place"]})':
+
+  name age hometown state.person state.place population
+  ---- --- -------- ------------ ----------- ----------
+  Jane  41 New York NY           NY           8,175,133
+  Nico  25 Portland ME           OR             583,776
+  Nico  25 Portland ME           ME              66,093  
+
+'innerJoin(a, b, "hometown", {keep:"a"})':
+
+  name age hometown state population
+  ---- --- -------- ----- ----------
+  Jane  41 New York NY     8,175,133
+  Nico  25 Portland ME       583,776
+  Nico  25 Portland ME        66,093
+
+*In practice, this particular case isn't very useful because the state-population match is now
+wrong.*
+
+Other Useful Stuff [#otherstuff]
+********************************
+
+A brief sampling of other useful functions:
+
+- `hasAny` and `hasAll` are extensions of `has` to multiple keys
+- `importFunctions` and `exportFunctions` facilitate moving functions from one project to another
+- `isNA` and `isNull` complement `isNaN` and the various other core 'is*' funtions
+- `removeNA`, `removeNull`, and `removeVal` remove NA's, nulls, or specific values from a list or
+  dict
+  
+For a complete list, see [the function listing]`ext-utility::index`.

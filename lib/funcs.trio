@@ -250,6 +250,27 @@ doc:
 src:
   (val) => val == na() 
 ---
+name:isNull
+func
+doc:
+  Returns *true* if 'val' is *null*, *false* otherwise.
+src:
+  (val) => val == null 
+---
+name:joinBy
+func
+nodoc
+src:
+  // Join column setup for *Join functions
+  (a, b, by) => "Hello World!"
+---
+name:joinOpts
+func
+nodoc
+src:
+  // Option setup for *Join functions
+  (opts) => "Hello World!"
+---
 name:leftJoin
 func
 doc:
@@ -427,6 +448,35 @@ src:
   
     // Eval
     eval(s)
+  end
+---
+name:testJoin
+func
+nodoc
+src:
+  // Test harnass for *Join functions
+  (expression) => do
+    // Test grids
+    a: [{name:"Bob",  age:63 , hometown:"Chicago", state:"IL"},
+        {name:"Jane", age:41 , hometown:"New York", state:"NY"},
+        {name:"Nico", age:25 , hometown:"Portland", state:"ME"}].toGrid
+
+    b: [{hometown:"New York", state:"NY", population:8175133},
+        {hometown:"Denver",   state:"CO", population:600158},
+        {hometown:"Portland", state:"OR", population:583776},
+        {hometown:"Portland", state:"ME", population:66093}].toGrid
+        
+    // Simple test joins
+    if (expression == "inner") return innerJoin(a, b)
+    if (expression == "left")  return leftJoin(a, b)
+    if (expression == "right") return rightJoin(a, b)
+    if (expression == "full")  return fullJoin(a, b)
+    if (expression == "semi")  return semiJoin(a, b)
+    if (expression == "anti")  return antiJoin(a, b)
+    
+    // More complex join; use form: (a, b) => *Join(a, b, ...)
+    f: expression.eval
+    f(a, b)
   end
 ---
 name:union

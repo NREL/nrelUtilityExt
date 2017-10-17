@@ -41,7 +41,7 @@ Parameters [#joinparams]
 The '*Join' functions accept the following parameters:
 
 - **a**, **b**: Grids to join
-- **by**: Columns to join by. If 'by' is *null* (the default), then '*Join' will perform a natural
+- **by**: Columns to join by. If 'by' is null (the default), then '*Join' will perform a natural
   join, using columns with names common to both 'a' and 'b'. 'by' may also be:
   - A string specifying a single common column name
   - A list of strings specifying multiple common column names
@@ -60,7 +60,7 @@ The '*Join' functions support the following options:
   - '"a"': Values from 'a' overwrite values from 'b'
   - '"b"': Values from 'b' overwrite values from 'a'
   - '"both"': Keeps values from both 'a' and 'b', disambiguated by suffix
-  - '"neither"' or '"drop"': Drops keys with conflicting values (replaces with *null*)
+  - '"neither"' or '"drop"': Drops keys with conflicting values (replaces with null)
   - '"na"': Replaces conflicting values with *NA*
   
   The default is '"both"'.
@@ -76,7 +76,7 @@ The '*Join' functions support the following options:
 Notes [#joinnotes]
 ==================
 
-1. If 'by' is not *null*, there is a potential for non-joined duplicate columns between grids 'a'
+1. If 'by' is not null, there is a potential for non-joined duplicate columns between grids 'a'
    and 'b'. In the joined grid, some rows may have conflicting values in these columns, that is, 
    values for the same key (column) that differ between 'a' and 'b'. The 'keep'
    [option]`ext-utility::doc#joinopts` governs what happens when there is such a conflict. If

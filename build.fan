@@ -14,7 +14,7 @@ class Build : BuildPod
   {
     podName = "utilityExt"
     summary = "Missing Axon Utility Functions"
-    version = Version("0.9.0")
+    version = Version("1.0.0")
     meta    = [
                 "ext.name":        "utility",
                 "ext.icon24":      "fan://frescoRes/img/iconMissing24.png",

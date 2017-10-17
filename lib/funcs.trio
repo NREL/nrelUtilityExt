@@ -13,7 +13,7 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => "Hello World!"  
+  (a, b, by:null, opts:{}) => joinWithMethod("anti", a, b, by, opts)
 ---
 name:arity
 func
@@ -94,7 +94,7 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => "Hello World!"  
+  (a, b, by:null, opts:{}) => joinWithMethod("full", a, b, by, opts) 
 ---
 name:hasAll
 func
@@ -191,7 +191,7 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => "Hello World!"  
+  (a, b, by:null, opts:{}) => joinWithMethod("inner", a, b, by, opts)
 ---
 name:intersect
 func
@@ -255,21 +255,224 @@ func
 doc:
   Returns *true* if 'val' is *null*, *false* otherwise.
 src:
-  (val) => val == null 
+  (val) => val == null
 ---
-name:joinBy
+name:joinWithMethod
 func
 nodoc
 src:
-  // Join column setup for *Join functions
-  (a, b, by) => "Hello World!"
----
-name:joinOpts
-func
-nodoc
-src:
-  // Option setup for *Join functions
-  (opts) => "Hello World!"
+  // Core implementation of *Join functions
+  (method, a, b, by, opts) => do
+    
+    //// Options ///////////////////////////////////////////////////////////////////////////////////
+    
+    // Option type checking
+    if (not(opts.isDict)) throw "'opts' must be a dict."
+    
+    // Merge defaults
+    opts = {keep:"both", suffix:{a:"a", b:"b"}}.merge(opts)
+    
+    // Sanitize 'keep' option
+    opts = opts.set("keep", opts->keep.lower)
+    if (not(opts["keep"].in(["a", "b", "both", "neither", "drop", "na"]))) do
+      throw "Option 'keep' must be one of: a, b, both, neither, drop, na"
+    end
+    if (opts["keep"] == "drop") opts = opts.set("keep", "neither")
+    
+    // Sanitize 'suffix' option
+    if (opts["suffix"].isList) do
+      if (opts->suffix.size < 2) throw "List for option 'suffix' must have two elements."
+      opts = opts.set("suffix", {a:opts->suffix[0], b:opts->suffix[1]})
+    end else if (opts["suffix"].isDict) do
+      if (not(opts->suffix.hasAll(["a","b"]))) do
+        throw "Dict for option 'suffix' must have named elements \"a\" and \"b\"."
+      end
+      opts = opts.set("suffix", opts->suffix.map(v => v.toStr.toTagName))
+    end else do
+      throw "Option 'suffix' must be a list or dict."
+    end
+    
+    //// Join Columns //////////////////////////////////////////////////////////////////////////////
+    
+    // Null: Natural join
+    if (by == null) do
+      by = intersect(colNames(a),colNames(b))
+    end
+    
+    // String: Single column
+    if (by.isStr) do
+      by = {}.set(by, by)
+    end
+    
+    // List: Multiple columns with same name 
+    if (by.isList) do
+      by.each() v => do
+        if (not(v.isStr)) throw "Each element of 'by' must be a string."
+      end
+      newBy: {}
+      by.each() v => newBy = newBy.set(v, v)
+      by = newBy
+    end
+    
+    // Dict: Multiple columns with same or different names 
+    if (by.isDict) do
+      by.each() v => do
+        if (not(v.isStr)) throw "Each element of 'by' must be a string."
+      end
+    
+    // Other: Error
+    else do
+      throw "If specified, 'by' must be a string, list, or dict containing valid column names."
+    end
+    
+    // Check results
+    by.each() (v, n) => do
+      if (a.missing(n)) throw "Column \"" + n + "\" is missing from grid 'a'."
+      if (b.missing(v)) throw "Column \"" + v + "\" is missing from grid 'b'."
+    end
+    
+    // Key names = grid A columns, key values = grid B columns
+      
+    //// Merge Action Function /////////////////////////////////////////////////////////////////////
+    
+    joinMerge: (rowA, rowB, overlap, keep) => do
+      // On conflict: keep A
+      if (keep == "a") return merge(rowB, rowA)
+
+      // On conflict: keep B
+      if (keep == "b") return merge(rowA, rowB)
+
+      // On conflict: keep both (columns already renamed)
+      if (keep == "both") return merge(rowB, rowA)
+
+      // Find conflicts
+      conflict: overlap.findAll() n => rowA.has(n) and rowB.has(n) and rowA[n] != rowB[n]
+
+      // On conflict: drop
+      if (keep == "neither") do
+        return merge(rowB, rowA).map((v, n) => if (n.in(conflict)) null else v)
+      end
+
+      // On conflict: convert to NA
+      if (keep == "na") do
+        return merge(rowB, rowA).map((v, n) => if (n.in(conflict)) na() else v)
+      end
+    end
+    
+    //// Setup /////////////////////////////////////////////////////////////////////////////////////
+    
+    // Method
+    method = method.lower
+    
+    // Initialize output grid
+    out: {}.toGrid
+    
+    // Overlapping columns (possible sources of conflicts)
+    overlap: intersect(
+      colNames(a).setDiff(names(by)),
+      colNames(b).setDiff(vals(by))
+    )
+    
+    // Preemptive column renaming
+    if (opts->keep == "both") do
+      overlap.each() n => do
+        a = a.renameCol(n, n + "_" + opts->suffix->a)
+        b = b.renameCol(n, n + "_" + opts->suffix->b)
+      end
+    end
+
+    //// Perform Join //////////////////////////////////////////////////////////////////////////////
+    
+    // LEFT, INNER, FULL (Common and A-unique rows)
+    if (method.in(["left", "inner", "full"])) do
+      
+      // Iterate on rows of A
+      a.each() rowA => do
+        // Find matches in B
+        match: b.findAll() rowB => do
+          by.all() (colB, colA) => rowA[colA] == rowB[colB]
+        end
+
+        // No matches
+        if (match.isEmpty) do
+          if (method.lower == "inner") do
+            return null // INNER
+          else do
+            out = out.addRow(rowA) // LEFT, FULL
+          end
+
+        // Matches
+        else do
+          out = out.addRows(
+            // Merge rows
+            match.map() rowB => joinMerge(rowA, rowB, overlap, opts->keep)
+          )
+        end
+      end
+      
+    end
+    
+    // RIGHT, FULL (B-unique rows)
+    if (method.in(["right", "full"])) do
+      
+      // Iterate rows of B
+      b.each() rowB => do
+        // Find matches in A
+        match: a.findAll() rowA => do
+          by.all() (colB, colA) => rowA[colA] == rowB[colB]
+        end
+
+        // No matches
+        if (match.isEmpty) do
+          out = out.addRow(rowB) // RIGHT, FULL
+
+        // Matches
+        else if (method.lower == "right") do
+          // RIGHT
+          out = out.addRows(
+            // Merge rows
+            match.map() rowA => joinMerge(rowA, rowB, overlap, opts->keep)
+          )
+        end
+      end
+      
+    end
+        
+    // SEMI, ANTI
+    if (method.in(["semi","anti"])) do
+    
+      // Iterate on rows of A
+      a.each() rowA => do
+        // Check for matches in B
+        match: b.find() rowB => by.all() (colB, colA) => rowA[colA] == rowB[colB]
+          
+        // SEMI
+        if (match != null and method.lower == "semi") out = out.addRow(rowA)
+        
+        // ANTI
+        if (match == null and method.lower == "anti") out = out.addRow(rowA)
+      end
+      
+    end
+    
+    //// Metadata //////////////////////////////////////////////////////////////////////////////////
+    
+    // To Do: Handle merging of grid and column metadata
+    
+    //// Post-Processing ///////////////////////////////////////////////////////////////////////////
+    
+    // Fix column order
+    if (method.in(["left", "right", "inner", "full"])) do
+      // A + B
+      colOrder: union(colNames(a),colNames(b)).intersect(colNames(out))  
+    else if (method.in(["semi","anti"])) do
+      // A only
+      colOrder: colNames(a).intersect(colNames(out))
+    end
+    
+    // Enforce unique entries, restore column order and return
+    return out.unique(colOrder).reorderCols(colOrder)
+  end
 ---
 name:leftJoin
 func
@@ -283,7 +486,14 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => "Hello World!"  
+  (a, b, by:null, opts:{}) => joinWithMethod("left", a, b, by, opts)
+---
+name:outerJoin
+func
+doc:
+  Alias for `fullJoin`.
+src:
+  (a, b, by:null, opts:{}) => joinWithMethod("full", a, b, by, opts) 
 ---
 name:removeNA
 func
@@ -367,7 +577,7 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => "Hello World!"  
+  (a, b, by:null, opts:{}) => joinWithMethod("right", a, b, by, opts)  
 ---
 name:semiJoin
 func
@@ -380,7 +590,7 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => "Hello World!"  
+  (a, b, by:null, opts:{}) => joinWithMethod("semi", a, b, by, opts)
 ---
 name:setDiff
 func
@@ -465,7 +675,11 @@ src:
         {hometown:"Denver",   state:"CO", population:600158},
         {hometown:"Portland", state:"OR", population:583776},
         {hometown:"Portland", state:"ME", population:66093}].toGrid
-        
+    
+    // Column order
+    a = a.reorderCols(["name","age","hometown","state"])
+    b = b.reorderCols(["hometown","state","population"])  
+    
     // Simple test joins
     if (expression == "inner") return innerJoin(a, b)
     if (expression == "left")  return leftJoin(a, b)

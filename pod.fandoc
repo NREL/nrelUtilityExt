@@ -70,6 +70,7 @@ The '*Join' functions support the following options:
   - A list of strings of length 2, corresponding to suffixes for columns in 'a' and 'b'
   - A dict with key names 'a' and 'b', corresponding to suffixes for columns in 'a' and 'b'
   
+  Suffixes are appended using an underscore as a seperator.
   The default suffixes are '"a"' and '"b"'.
   
 Notes [#joinnotes]
@@ -81,7 +82,14 @@ Notes [#joinnotes]
    [option]`ext-utility::doc#joinopts` governs what happens when there is such a conflict. If
    instead either 'a' or 'b' is simply *missing* the duplicate key, then there is no conflict: the
    value from the other grid is included in the output.
-2. Output column ordering is always all columns of 'a' followed by any new columns from 'b'.
+2. Output column order is always all columns of 'a' followed by any new columns from 'b'. Output row
+   order depends on the type of join:
+   
+   - Left, inner, and full joins search and return rows of 'a' first followed by rows of 'b'
+   - Right joins search and return rows of 'b' first followed by rows of 'a'
+   
+3. Duplicated rows are discarded from the output.
+4. Merging grid and column meta is *not* currently supported.
   
 Examples [#joinexamples]
 ========================
@@ -130,9 +138,9 @@ Regular Joins [#joinexamplesregular]
   name age hometown state population
   ---- --- -------- ----- ----------
   Jane  41 New York NY     8,175,133
-  Nico  25 Portland ME        66,093
            Denver   CO       600,158
            Portland OR       583,776
+  Nico  25 Portland ME        66,093
 
 'fullJoin(a, b)':
 
@@ -167,7 +175,7 @@ Things get more interesting if we omit "state" from the join columns.
 
 'innerJoin(a, b, "hometown")':
 
-  name age hometown state.a state.b population
+  name age hometown state_a state_b population
   ---- --- -------- ------- ------- ----------
   Jane  41 New York NY      NY       8,175,133
   Nico  25 Portland ME      OR         583,776
@@ -177,7 +185,7 @@ Things get more interesting if we omit "state" from the join columns.
 
 'innerJoin(a, b, "hometown", {suffix:["person","place"]})':
 
-  name age hometown state.person state.place population
+  name age hometown state_person state_place population
   ---- --- -------- ------------ ----------- ----------
   Jane  41 New York NY           NY           8,175,133
   Nico  25 Portland ME           OR             583,776
@@ -202,7 +210,7 @@ A brief sampling of other useful functions:
 - `hasAny` and `hasAll` are extensions of `has` to multiple keys
 - `importFunctions` and `exportFunctions` facilitate moving functions from one project to another
 - `isNA` and `isNull` complement `isNaN` and the various other core 'is*' funtions
-- `removeNA`, `removeNull`, and `removeVal` remove NA's, nulls, or specific values from a list or
+- `removeNA`, `removeNull`, and `removeVal` remove NAs, nulls, or specific values from a list or
   dict
   
 For a complete list, see [the function listing]`ext-utility::index`.

@@ -6,31 +6,32 @@
 using build
 
 **
-** Build: utilExt
+** Build: utilityExt
 **
 class Build : BuildPod
 {
   new make()
   {
-    podName = "utilExt"
+    podName = "utilityExt"
     summary = "Missing Axon Utility Functions"
-    version = Version("0.9.0-beta)
+    version = Version("1.0.0")
     meta    = [
-                "ext.name":    "util",
-                "ext.icon24":  "fan://frescoRes/img/iconMissing24.png",
-                "ext.icon72":  "fan://frescoRes/img/iconMissing72.png",
-                "org.name":     "NREL",
-                "org.uri":      "https://www.nrel.gov/",
-                "proj.name":    "Missing Utilities",
-                "proj.uri":     "https://github.nrel.gov/sfrank1/utilExt",
-                "license.name": "Commercial",
+                "ext.name":        "utility",
+                "ext.icon24":      "fan://frescoRes/img/iconMissing24.png",
+                "ext.icon72":      "fan://frescoRes/img/iconMissing72.png",
+                "org.name":        "NREL",
+                "org.uri":         "https://www.nrel.gov/",
+                "proj.name":       "Missing Utilities",
+                "proj.uri":        "https://github.nrel.gov/sfrank1/utilityExt",
+                "license.name":    "Commercial",
+                "skyspark.docExt": "true",
               ]
-    depends = ["sys 1.0", "axon 3.0"]
+    depends = ["sys 1.0", "axon 3.0", "ioExt 3.0"]
     resDirs = [`locale/`,
                `lib/`]
     index   =
     [
-      "skyarc.ext": "utilExt",
+      "skyarc.ext": "utilityExt",
     ]
   }
 }

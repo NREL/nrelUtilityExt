@@ -1,0 +1,216 @@
+Overview [#over]
+****************
+
+The Utility extension provides a variety of missing utility functions for the Axon programming
+language.
+
+Set Operations [#setops]
+************************
+
+The `union`, `intersect`, and `setDiff` functions provide set operations for lists and dicts modeled
+on the equivalent functions in the [R programming language]`https://www.r-project.org/`. They
+complement the core function `merge`.
+
+SQL-Style Grid Joins [#joins]
+*****************************
+
+The Utility extension includes a set of functions that implement SQL-style joins for grids, modeled
+closely on the join functions included in the
+[dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` package for R. Each
+join function has the general form '*Join(a, b, by, opts)', in which 'a' and 'b' are grids to join,
+'by' specifies the column(s) to use to join the grids, and 'opts' is a dict of control options.
+
+Join Types [#jointypes]
+=======================
+
+Six types of joins are available:
+
+- `innerJoin`: Returns all rows from 'a' where there are matching values in 'b' and all columns from
+  'a' and 'b'
+- `leftJoin`: Returns all rows from 'a' and all columns from 'a' and 'b'
+- `rightJoin`: Returns all rows from 'b' and all columns from 'a' and 'b'
+- `fullJoin`: Returns all rows and columns from both 'a' and 'b'
+- `semiJoin`: Returns all rows from 'a' where there are matching values in 'b', keeping columns from
+  'a' only
+- `antiJoin`: Returns all rows from 'a' where there are *not* matching values in 'b', keeping
+  columns from 'a' only
+
+Parameters [#joinparams]
+========================
+
+The '*Join' functions accept the following parameters:
+
+- **a**, **b**: Grids to join
+- **by**: Columns to join by. If 'by' is null (the default), then '*Join' will perform a natural
+  join, using columns with names common to both 'a' and 'b'. 'by' may also be:
+  - A string specifying a single common column name
+  - A list of strings specifying multiple common column names
+  - A dict in the form '{x:y, ...}' where each key name 'x' is a column name in 'a' and each key
+    value 'y' (which must be a string) is a corresponding column name in 'b'
+- **opts:** A dict of control options; see [Options]`ext-utility::doc#joinopts`
+    
+Options [#joinopts]
+===================
+
+The '*Join' functions support the following options:
+
+- 'keep': String specifying how to handle conflicting values in non-joined duplicate columns in
+  'a' and 'b':
+  
+  - '"a"': Values from 'a' overwrite values from 'b'
+  - '"b"': Values from 'b' overwrite values from 'a'
+  - '"both"': Keeps values from both 'a' and 'b', disambiguated by suffix
+  - '"neither"' or '"drop"': Drops keys with conflicting values (replaces with null)
+  - '"na"': Replaces conflicting values with *NA*
+  
+  The default is '"both"'.
+- 'suffix': When 'keep == "both"', specifies suffixes to use to disambiguate non-joined duplicate
+  columns in 'a' and 'b'. May be:
+  
+  - A list of strings of length 2, corresponding to suffixes for columns in 'a' and 'b'
+  - A dict with key names 'a' and 'b', corresponding to suffixes for columns in 'a' and 'b'
+  
+  Suffixes are appended using an underscore as a seperator.
+  The default suffixes are '"a"' and '"b"'.
+  
+Notes [#joinnotes]
+==================
+
+1. If 'by' is not null, there is a potential for non-joined duplicate columns between grids 'a'
+   and 'b'. In the joined grid, some rows may have conflicting values in these columns, that is, 
+   values for the same key (column) that differ between 'a' and 'b'. The 'keep'
+   [option]`ext-utility::doc#joinopts` governs what happens when there is such a conflict. If
+   instead either 'a' or 'b' is simply *missing* the duplicate key, then there is no conflict: the
+   value from the other grid is included in the output.
+2. Output column order is always all columns of 'a' followed by any new columns from 'b'. Output row
+   order depends on the type of join:
+   
+   - Left, inner, and full joins search and return rows of 'a' first followed by rows of 'b'
+   - Right joins search and return rows of 'b' first followed by rows of 'a'
+   
+3. Duplicated rows are discarded from the output.
+4. Merging grid and column meta is *not* currently supported.
+  
+Examples [#joinexamples]
+========================
+
+Consider two grids 'a' and 'b':
+
+'a':              
+  
+  name age hometown state
+  ---- --- -------- -----
+  Bob   63 Chicago  IL
+  Jane  41 New York NY
+  Nico  25 Portland ME
+
+'b':
+
+  hometown state population
+  -------- ----- ----------
+  New York NY     8,175,133
+  Denver   CO       600,158
+  Portland OR       583,776
+  Portland ME        66,093
+
+For these example grids, natural joins will use "hometown" and "state" as the 'by' columns.
+  
+Regular Joins [#joinexamplesregular]
+------------------------------------
+
+'innerJoin(a, b)':
+
+  name age hometown state population
+  ---- --- -------- ----- ----------
+  Jane  41 New York NY     8,175,133
+  Nico  25 Portland ME        66,093  
+
+'leftJoin(a, b)':
+
+  name age hometown state population
+  ---- --- -------- ----- ----------
+  Bob   63 Chicago  IL
+  Jane  41 New York NY     8,175,133
+  Nico  25 Portland ME        66,093  
+
+'rightJoin(a, b)':
+
+  name age hometown state population
+  ---- --- -------- ----- ----------
+  Jane  41 New York NY     8,175,133
+           Denver   CO       600,158
+           Portland OR       583,776
+  Nico  25 Portland ME        66,093
+
+'fullJoin(a, b)':
+
+  name age hometown state population
+  ---- --- -------- ----- ----------
+  Bob   63 Chicago  IL
+  Jane  41 New York NY     8,175,133
+  Nico  25 Portland ME        66,093
+           Denver   CO       600,158
+           Portland OR       583,776
+  
+Partial Joins [#joinexamplespartial]
+------------------------------------
+
+'semiJoin(a, b)':
+
+  name age hometown state
+  ---- --- -------- -----
+  Jane  41 New York NY   
+  Nico  25 Portland ME     
+
+'antiJoin(a, b)':
+
+  name age hometown state
+  ---- --- -------- -----
+  Bob   63 Chicago  IL  
+  
+Modifying Join Columns [#joinexamplesby]
+----------------------------------------
+
+Things get more interesting if we omit "state" from the join columns.
+
+'innerJoin(a, b, "hometown")':
+
+  name age hometown state_a state_b population
+  ---- --- -------- ------- ------- ----------
+  Jane  41 New York NY      NY       8,175,133
+  Nico  25 Portland ME      OR         583,776
+  Nico  25 Portland ME      ME          66,093  
+
+*By default, 'keep == "both"'*
+
+'innerJoin(a, b, "hometown", {suffix:["person","place"]})':
+
+  name age hometown state_person state_place population
+  ---- --- -------- ------------ ----------- ----------
+  Jane  41 New York NY           NY           8,175,133
+  Nico  25 Portland ME           OR             583,776
+  Nico  25 Portland ME           ME              66,093  
+
+'innerJoin(a, b, "hometown", {keep:"a"})':
+
+  name age hometown state population
+  ---- --- -------- ----- ----------
+  Jane  41 New York NY     8,175,133
+  Nico  25 Portland ME       583,776
+  Nico  25 Portland ME        66,093
+
+*In practice, this particular case isn't very useful because the state-population match is now
+wrong.*
+
+Other Useful Stuff [#otherstuff]
+********************************
+
+A brief sampling of other useful functions:
+
+- `hasAny` and `hasAll` are extensions of `has` to multiple keys
+- `importFunctions` and `exportFunctions` facilitate moving functions from one project to another
+- `isNA` and `isNull` complement `isNaN` and the various other core 'is*' funtions
+- `removeNA`, `removeNull`, and `removeVal` remove NAs, nulls, or specific values from a list or
+  dict
+  
+For a complete list, see [the function listing]`ext-utility::index`.

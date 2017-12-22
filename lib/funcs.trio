@@ -499,13 +499,26 @@ name:removeNA
 func
 doc:
   Removes NA values from list or dict 'x'.
+  
+  Side effects: may rearrange dict key order.
 src:
   (x) => x.findAll() v => v != na()
+---
+name:removeNaN
+func
+doc:
+  Removes NaN values from list or dict 'x'.
+  
+  Side effects: may rearrange dict key order.
+src:
+  (x) => x.findAll() v => not v.isNaN
 ---
 name:removeNull
 func
 doc:
   Removes null values from list or dict 'x'.
+  
+  Side effects: may rearrange dict key order.
 src:
   (x) => x.findAll() v => v != null
 ---
@@ -513,6 +526,8 @@ name:removeVal
 func
 doc:
   Remove any elements from list or dict 'x' that equal 'val'.
+  
+  Side effects: may rearrange dict key order.
 src:
   (x, val) => x.findAll() v => v != val
 ---

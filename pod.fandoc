@@ -210,7 +210,7 @@ A brief sampling of other useful functions:
 - `hasAny` and `hasAll` are extensions of `has` to multiple keys
 - `importFunctions` and `exportFunctions` facilitate moving functions from one project to another
 - `isNA` and `isNull` complement `isNaN` and the various other core 'is*' funtions
-- `removeNA`, `removeNull`, and `removeVal` remove NAs, nulls, or specific values from a list or
-  dict
+- `removeNA`, `removeNaN`, `removeNull`, and `removeVal` remove NAs, NaNs, nulls, or specific values
+  from a list or dict
   
 For a complete list, see [the function listing]`ext-utility::index`.

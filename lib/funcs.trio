@@ -495,17 +495,39 @@ doc:
 src:
   (a, b, by:null, opts:{}) => joinWithMethod("full", a, b, by, opts) 
 ---
+name:parseRef2
+func
+doc:
+  Convenience wrapper for `parseRef` that supports leading "@" without throwing error.
+src:
+  (val, checked:true) => do
+    if (val.startsWith("@")) parseRef(val[1..-1], checked) else parseRef(val, checked)
+  end
+---
 name:removeNA
 func
 doc:
   Removes NA values from list or dict 'x'.
+  
+  Side effects: may rearrange dict key order.
 src:
   (x) => x.findAll() v => v != na()
+---
+name:removeNaN
+func
+doc:
+  Removes NaN values from list or dict 'x'.
+  
+  Side effects: may rearrange dict key order.
+src:
+  (x) => x.findAll() v => not v.isNaN
 ---
 name:removeNull
 func
 doc:
   Removes null values from list or dict 'x'.
+  
+  Side effects: may rearrange dict key order.
 src:
   (x) => x.findAll() v => v != null
 ---
@@ -513,6 +535,8 @@ name:removeVal
 func
 doc:
   Remove any elements from list or dict 'x' that equal 'val'.
+  
+  Side effects: may rearrange dict key order.
 src:
   (x, val) => x.findAll() v => v != val
 ---

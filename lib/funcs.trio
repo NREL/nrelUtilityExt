@@ -495,6 +495,15 @@ doc:
 src:
   (a, b, by:null, opts:{}) => joinWithMethod("full", a, b, by, opts) 
 ---
+name:parseRef2
+func
+doc:
+  Convenience wrapper for `parseRef` that supports leading "@" without throwing error.
+src:
+  (val, checked:true) => do
+    if (val.startsWith("@")) parseRef(val[1..-1], checked) else parseRef(val, checked)
+  end
+---
 name:removeNA
 func
 doc:

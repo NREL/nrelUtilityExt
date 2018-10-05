@@ -1,6 +1,6 @@
 #! /usr/bin/env fan
 
-// Copyright (C) 2017, National Renewable Energy Laboratory
+// Copyright (C) 2018, National Renewable Energy Laboratory
 // All Rights Reserved
 
 using build
@@ -22,8 +22,8 @@ class Build : BuildPod
                 "org.name":        "NREL",
                 "org.uri":         "https://www.nrel.gov/",
                 "proj.name":       "Missing Utilities",
-                "proj.uri":        "https://github.nrel.gov/sfrank1/utilityExt",
-                "license.name":    "Commercial",
+                "proj.uri":        "https://github.com/NREL/utilityExt",
+                "license.name":    "BSD-3",
                 "skyspark.docExt": "true",
               ]
     depends = ["sys 1.0", "axon 3.0", "ioExt 3.0"]

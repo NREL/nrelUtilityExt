@@ -6,23 +6,23 @@
 using build
 
 **
-** Build: utilityExt
+** Build: nrelUtilityExt
 **
 class Build : BuildPod
 {
   new make()
   {
-    podName = "utilityExt"
+    podName = "nrelUtilityExt"
     summary = "Missing Axon Utility Functions"
-    version = Version("1.1.1")
+    version = Version("1.1.2")
     meta    = [
-                "ext.name":        "utility",
+                "ext.name":        "nrelUtility",
                 "ext.icon24":      "fan://frescoRes/img/iconMissing24.png",
                 "ext.icon72":      "fan://frescoRes/img/iconMissing72.png",
                 "org.name":        "NREL",
                 "org.uri":         "https://www.nrel.gov/",
-                "proj.name":       "Missing Utilities",
-                "proj.uri":        "https://github.com/NREL/utilityExt",
+                "proj.name":       "NREL Utility Extension",
+                "proj.uri":        "https://github.com/NREL/nrelUtilityExt",
                 "license.name":    "BSD-3",
                 "skyspark.docExt": "true",
               ]
@@ -31,7 +31,7 @@ class Build : BuildPod
                `lib/`]
     index   =
     [
-      "skyarc.ext": "utilityExt",
+      "skyarc.ext": "nrelUtilityExt",
     ]
   }
 }

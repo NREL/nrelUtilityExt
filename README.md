@@ -1,11 +1,13 @@
-utilityExt: Missing SkySpark Utility Functions
-==============================================
+nrelUtilityExt: Missing SkySpark Utility Functions
+==================================================
 
-**utilityExt** is a [SkySpark] extension that provides a variety of missing utility functions for the
-[Axon] programming language.
+**nrelUtilityExt** is a [SkySpark] extension that provides a variety of missing utility functions
+for the [Axon] programming language. This package is developed and provided free of charge by the
+[National Renewable Energy Laboratory].
 
 [SkySpark]: http://skyfoundry.com/skyspark/ "SkySpark"
 [Axon]: https://skyfoundry.com/doc/docSkySpark/AxonLang "Axon Language"
+[National Renewable Energy Laboratory]: https://www.nrel.gov
 
 Build
 -----
@@ -14,9 +16,9 @@ Build instructions:
 
 1. Create a local clone of this repository on a computer with a working copy of SkySpark.
 2. From the command line, change directory to the SkySpark root directory.
-3. Execute `bin/fan /path/to/utilityExt/build.fan`.
+3. Execute `bin/fan /path/to/nrelUtilityExt/build.fan`.
    * On Linux, you may need to `chmod +x bin/fan` first.
-   * Output pod will be `lib/fan/utilityExt.pod` (relative to SkySpark root).
+   * Output pod will be `lib/fan/nrelUtilityExt.pod` (relative to SkySpark root).
 4. Execute `bin/fan docgen` to regenerate documentation.
 
 Build instructions are the same for Windows except paths use backslashes `\` and `fan` becomes
@@ -26,8 +28,9 @@ Installation
 ------------
 
 Select a set of installation instructions below that corresponds to how you obtained the
-**utilityExt** extension. Following installation, you must enable the *Utility* extension in the
-*Exts* tab of the SkySpark *Settings* app within each project that needs access to the functions.
+**nrelUtilityExt** extension. Following installation, you must enable the *nrelUtility*
+extension in the *Exts* tab of the SkySpark *Settings* app within each project that needs
+access to the functions.
 
 ### From Source ###
 
@@ -36,8 +39,8 @@ SkySpark.
 
 ### From GitHub ###
 
-1. Download a `utilityExt.pod` release from GitHub.
-2. Copy `utilityExt.pod` into the `lib/fan/` directory of your SkySpark installation.
+1. Download a `nrelUtilityExt.pod` release from GitHub.
+2. Copy `nrelUtilityExt.pod` into the `lib/fan/` directory of your SkySpark installation.
 3. Set ownership permissions correctly on the pod to match the other pods in your SkySpark
    installation (Linux/Mac).
 4. From the command line, change directory to the SkySpark root directory.
@@ -50,8 +53,8 @@ SkySpark.
 Help
 ----
 
-Function help is available in the SkySpark *Help* app under *utility* or within the help interface
-in the *Func* app.
+Function help is available in the SkySpark *Help* app under *nrelUtility* or within the help
+interface in the *Func* app.
 
 License
 -------

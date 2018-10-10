@@ -1,24 +1,25 @@
 Overview [#over]
 ****************
 
-The Utility extension provides a variety of missing utility functions for the Axon programming
-language.
+The NREL Utility extension provides a variety of missing utility functions for the Axon
+programming language.
 
 Set Operations [#setops]
 ************************
 
-The `union`, `intersect`, and `setDiff` functions provide set operations for lists and dicts modeled
-on the equivalent functions in the [R programming language]`https://www.r-project.org/`. They
-complement the core function `merge`.
+The `union`, `intersect`, and `setDiff` functions provide set operations for lists and
+dicts modeled on the equivalent functions in the
+[R programming language]`https://www.r-project.org/`. They complement the core function `merge`.
 
 SQL-Style Grid Joins [#joins]
 *****************************
 
-The Utility extension includes a set of functions that implement SQL-style joins for grids, modeled
-closely on the join functions included in the
-[dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` package for R. Each
-join function has the general form '*Join(a, b, by, opts)', in which 'a' and 'b' are grids to join,
-'by' specifies the column(s) to use to join the grids, and 'opts' is a dict of control options.
+The NREL Utility extension includes a set of functions that implement SQL-style joins for
+grids, modeled closely on the join functions included in the
+[dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` package for R.
+Each join function has the general form '*Join(a, b, by, opts)', in which 'a' and 'b' are grids
+to join, 'by' specifies the column(s) to use to join the grids, and 'opts' is a dict of
+control options.
 
 Join Types [#jointypes]
 =======================
@@ -47,7 +48,7 @@ The '*Join' functions accept the following parameters:
   - A list of strings specifying multiple common column names
   - A dict in the form '{x:y, ...}' where each key name 'x' is a column name in 'a' and each key
     value 'y' (which must be a string) is a corresponding column name in 'b'
-- **opts:** A dict of control options; see [Options]`ext-utility::doc#joinopts`
+- **opts:** A dict of control options; see [Options]`ext-nrelUtility::doc#joinopts`
     
 Options [#joinopts]
 ===================
@@ -77,11 +78,11 @@ Notes [#joinnotes]
 ==================
 
 1. If 'by' is not null, there is a potential for non-joined duplicate columns between grids 'a'
-   and 'b'. In the joined grid, some rows may have conflicting values in these columns, that is, 
-   values for the same key (column) that differ between 'a' and 'b'. The 'keep'
-   [option]`ext-utility::doc#joinopts` governs what happens when there is such a conflict. If
-   instead either 'a' or 'b' is simply *missing* the duplicate key, then there is no conflict: the
-   value from the other grid is included in the output.
+   and 'b'. In the joined grid, some rows may have conflicting values in these columns,
+   that is, values for the same key (column) that differ between 'a' and 'b'. The 'keep'
+   [option]`ext-nrelUtility::doc#joinopts` governs what happens when there is such a conflict.
+   If instead either 'a' or 'b' is simply *missing* the duplicate key, then there is no
+   conflict: the value from the other grid is included in the output.
 2. Output column order is always all columns of 'a' followed by any new columns from 'b'. Output row
    order depends on the type of join:
    
@@ -213,4 +214,4 @@ A brief sampling of other useful functions:
 - `removeNA`, `removeNaN`, `removeNull`, and `removeVal` remove NAs, NaNs, nulls, or specific values
   from a list or dict
   
-For a complete list, see [the function listing]`ext-utility::index`.
+For a complete list, see [the function listing]`ext-nrelUtility::index`.

@@ -11,7 +11,7 @@ doc:
   'antiJoin' is one of six SQL-style joins modeled on the two-table verbs in the
   [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
   more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-utility::doc#joins`.
+  [join documentation]`ext-nrelUtility::doc#joins`.
 src:
   (a, b, by:null, opts:{}) => joinWithMethod("anti", a, b, by, opts)
 ---
@@ -92,7 +92,7 @@ doc:
   'fullJoin' is one of six SQL-style joins modeled on the two-table verbs in the
   [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
   more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-utility::doc#joins`.
+  [join documentation]`ext-nrelUtility::doc#joins`.
 src:
   (a, b, by:null, opts:{}) => joinWithMethod("full", a, b, by, opts) 
 ---
@@ -189,7 +189,7 @@ doc:
   'innerJoin' is one of six SQL-style joins modeled on the two-table verbs in the
   [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
   more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-utility::doc#joins`.
+  [join documentation]`ext-nrelUtility::doc#joins`.
 src:
   (a, b, by:null, opts:{}) => joinWithMethod("inner", a, b, by, opts)
 ---
@@ -484,7 +484,7 @@ doc:
   'leftJoin' is one of six SQL-style joins modeled on the two-table verbs in the
   [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
   more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-utility::doc#joins`.
+  [join documentation]`ext-nrelUtility::doc#joins`.
 src:
   (a, b, by:null, opts:{}) => joinWithMethod("left", a, b, by, opts)
 ---
@@ -599,7 +599,7 @@ doc:
   'rightJoin' is one of six SQL-style joins modeled on the two-table verbs in the
   [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
   more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-utility::doc#joins`.
+  [join documentation]`ext-nrelUtility::doc#joins`.
 src:
   (a, b, by:null, opts:{}) => joinWithMethod("right", a, b, by, opts)  
 ---
@@ -612,7 +612,7 @@ doc:
   'semiJoin' is one of six SQL-style joins modeled on the two-table verbs in the
   [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
   more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-utility::doc#joins`.
+  [join documentation]`ext-nrelUtility::doc#joins`.
 src:
   (a, b, by:null, opts:{}) => joinWithMethod("semi", a, b, by, opts)
 ---

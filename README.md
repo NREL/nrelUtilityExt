@@ -1,5 +1,5 @@
-nrelUtilityExt: Missing SkySpark Utility Functions
-==================================================
+nrelUtilityExt: Missing Axon Utility Functions
+==============================================
 
 **nrelUtilityExt** is a [SkySpark] extension that provides a variety of missing utility functions
 for the [Axon] programming language. This package is developed and provided free of charge by the

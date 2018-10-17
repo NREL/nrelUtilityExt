@@ -13,7 +13,13 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => joinWithMethod("anti", a, b, by, opts)
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty or b.isEmpty) return a
+
+    // Execute join
+    joinWithMethod("anti", a, b, by, opts)
+  end
 ---
 name:arity
 func
@@ -94,7 +100,14 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => joinWithMethod("full", a, b, by, opts) 
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty) return b
+    if (b.isEmpty) return a
+
+    // Execute join
+    joinWithMethod("full", a, b, by, opts)
+  end
 ---
 name:hasAll
 func
@@ -191,7 +204,13 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => joinWithMethod("inner", a, b, by, opts)
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty or b.isEmpty) return [].toGrid
+
+    // Execute join
+    joinWithMethod("inner", a, b, by, opts)
+  end
 ---
 name:intersect
 func
@@ -490,14 +509,20 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => joinWithMethod("left", a, b, by, opts)
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty or b.isEmpty) return a
+
+    // Execute join
+    joinWithMethod("left", a, b, by, opts)
+  end
 ---
 name:outerJoin
 func
 doc:
   Alias for `fullJoin`.
 src:
-  (a, b, by:null, opts:{}) => joinWithMethod("full", a, b, by, opts) 
+  (a, b, by:null, opts:{}) => fullJoin(a, b, by, opts)
 ---
 name:parseRef2
 func
@@ -605,7 +630,13 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => joinWithMethod("right", a, b, by, opts)  
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty or b.isEmpty) return b
+
+    // Execute join
+    joinWithMethod("right", a, b, by, opts) 
+  end  
 ---
 name:semiJoin
 func
@@ -618,7 +649,14 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => joinWithMethod("semi", a, b, by, opts)
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty) return a
+    if (b.isEmpty) return [].toGrid
+
+    // Execute join
+    joinWithMethod("semi", a, b, by, opts)
+  end
 ---
 name:setDiff
 func
@@ -709,9 +747,10 @@ src:
     b = b.reorderCols(["hometown","state","population"])  
     
     // Simple test joins
-    if (expression == "inner") return innerJoin(a, b)
     if (expression == "left")  return leftJoin(a, b)
     if (expression == "right") return rightJoin(a, b)
+    if (expression == "inner") return innerJoin(a, b)
+    if (expression == "outer") return outerJoin(a, b)
     if (expression == "full")  return fullJoin(a, b)
     if (expression == "semi")  return semiJoin(a, b)
     if (expression == "anti")  return antiJoin(a, b)

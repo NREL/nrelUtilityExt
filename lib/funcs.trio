@@ -268,6 +268,9 @@ src:
     
     // Option type checking
     if (not(opts.isDict)) throw "'opts' must be a dict."
+        
+    // Method
+    method = method.lower
     
     // Merge defaults
     opts = {keep:"both", suffix:{a:"a", b:"b"}}.merge(opts)
@@ -278,6 +281,7 @@ src:
       throw "Option 'keep' must be one of: a, b, both, neither, drop, na"
     end
     if (opts["keep"] == "drop") opts = opts.set("keep", "neither")
+    if (method.in(["semi","anti"])) opts = opts.set("keep", "a") // Override for antiJoin, semiJoin
     
     // Sanitize 'suffix' option
     if (opts["suffix"].isList) do
@@ -361,26 +365,26 @@ src:
     
     //// Setup /////////////////////////////////////////////////////////////////////////////////////
     
-    // Method
-    method = method.lower
-    
     // Initialize output grid
     out: {}.toGrid
     
-    // Overlapping columns (possible sources of conflicts)
-    overlap: intersect(
-      colNames(a).setDiff(names(by)),
-      colNames(b).setDiff(vals(by))
-    )
-    
-    // Preemptive column renaming
-    if (opts->keep == "both") do
-      overlap.each() n => do
-        a = a.renameCol(n, n + "_" + opts->suffix->a)
-        b = b.renameCol(n, n + "_" + opts->suffix->b)
+    // Check for conflicts (Left, Right, Inner, and Full joins only)
+    if (method.in(["left", "right", "inner", "full"])) do
+      // Overlapping columns (possible sources of conflicts)
+      overlap: intersect(
+        colNames(a).setDiff(names(by)),
+        colNames(b).setDiff(vals(by))
+      )
+
+      // Preemptive column renaming
+      if (opts->keep == "both") do
+        overlap.each() n => do
+          a = a.renameCol(n, n + "_" + opts->suffix->a)
+          b = b.renameCol(n, n + "_" + opts->suffix->b)
+        end
       end
     end
-
+    
     //// Perform Join //////////////////////////////////////////////////////////////////////////////
     
     // LEFT, INNER, FULL (Common and A-unique rows)

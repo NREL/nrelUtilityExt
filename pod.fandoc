@@ -64,15 +64,15 @@ The '*Join' functions support the following options:
   - '"neither"' or '"drop"': Drops keys with conflicting values (replaces with null)
   - '"na"': Replaces conflicting values with *NA*
   
-  The default is '"both"'.
+  The default is '"both"'. This option has no effect for `semiJoin` and `antiJoin`.
 - 'suffix': When 'keep == "both"', specifies suffixes to use to disambiguate non-joined duplicate
   columns in 'a' and 'b'. May be:
   
   - A list of strings of length 2, corresponding to suffixes for columns in 'a' and 'b'
   - A dict with key names 'a' and 'b', corresponding to suffixes for columns in 'a' and 'b'
   
-  Suffixes are appended using an underscore as a seperator.
-  The default suffixes are '"a"' and '"b"'.
+  Suffixes are appended using an underscore as a separator. The default suffixes are '"a"' and
+  '"b"'. This option has no effect for `semiJoin` and `antiJoin`.
   
 Notes [#joinnotes]
 ==================

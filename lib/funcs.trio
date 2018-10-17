@@ -13,7 +13,13 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => joinWithMethod("anti", a, b, by, opts)
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty or b.isEmpty) return a
+
+    // Execute join
+    joinWithMethod("anti", a, b, by, opts)
+  end
 ---
 name:arity
 func
@@ -94,7 +100,14 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => joinWithMethod("full", a, b, by, opts) 
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty) return b
+    if (b.isEmpty) return a
+
+    // Execute join
+    joinWithMethod("full", a, b, by, opts)
+  end
 ---
 name:hasAll
 func
@@ -191,7 +204,13 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => joinWithMethod("inner", a, b, by, opts)
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty or b.isEmpty) return [].toGrid
+
+    // Execute join
+    joinWithMethod("inner", a, b, by, opts)
+  end
 ---
 name:intersect
 func
@@ -268,6 +287,9 @@ src:
     
     // Option type checking
     if (not(opts.isDict)) throw "'opts' must be a dict."
+        
+    // Method
+    method = method.lower
     
     // Merge defaults
     opts = {keep:"both", suffix:{a:"a", b:"b"}}.merge(opts)
@@ -278,6 +300,7 @@ src:
       throw "Option 'keep' must be one of: a, b, both, neither, drop, na"
     end
     if (opts["keep"] == "drop") opts = opts.set("keep", "neither")
+    if (method.in(["semi","anti"])) opts = opts.set("keep", "a") // Override for antiJoin, semiJoin
     
     // Sanitize 'suffix' option
     if (opts["suffix"].isList) do
@@ -361,26 +384,26 @@ src:
     
     //// Setup /////////////////////////////////////////////////////////////////////////////////////
     
-    // Method
-    method = method.lower
-    
     // Initialize output grid
     out: {}.toGrid
     
-    // Overlapping columns (possible sources of conflicts)
-    overlap: intersect(
-      colNames(a).setDiff(names(by)),
-      colNames(b).setDiff(vals(by))
-    )
-    
-    // Preemptive column renaming
-    if (opts->keep == "both") do
-      overlap.each() n => do
-        a = a.renameCol(n, n + "_" + opts->suffix->a)
-        b = b.renameCol(n, n + "_" + opts->suffix->b)
+    // Check for conflicts (Left, Right, Inner, and Full joins only)
+    if (method.in(["left", "right", "inner", "full"])) do
+      // Overlapping columns (possible sources of conflicts)
+      overlap: intersect(
+        colNames(a).setDiff(names(by)),
+        colNames(b).setDiff(vals(by))
+      )
+
+      // Preemptive column renaming
+      if (opts->keep == "both") do
+        overlap.each() n => do
+          a = a.renameCol(n, n + "_" + opts->suffix->a)
+          b = b.renameCol(n, n + "_" + opts->suffix->b)
+        end
       end
     end
-
+    
     //// Perform Join //////////////////////////////////////////////////////////////////////////////
     
     // LEFT, INNER, FULL (Common and A-unique rows)
@@ -486,14 +509,20 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => joinWithMethod("left", a, b, by, opts)
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty or b.isEmpty) return a
+
+    // Execute join
+    joinWithMethod("left", a, b, by, opts)
+  end
 ---
 name:outerJoin
 func
 doc:
   Alias for `fullJoin`.
 src:
-  (a, b, by:null, opts:{}) => joinWithMethod("full", a, b, by, opts) 
+  (a, b, by:null, opts:{}) => fullJoin(a, b, by, opts)
 ---
 name:parseRef2
 func
@@ -601,7 +630,13 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => joinWithMethod("right", a, b, by, opts)  
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty or b.isEmpty) return b
+
+    // Execute join
+    joinWithMethod("right", a, b, by, opts) 
+  end  
 ---
 name:semiJoin
 func
@@ -614,7 +649,14 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 src:
-  (a, b, by:null, opts:{}) => joinWithMethod("semi", a, b, by, opts)
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty) return a
+    if (b.isEmpty) return [].toGrid
+
+    // Execute join
+    joinWithMethod("semi", a, b, by, opts)
+  end
 ---
 name:setDiff
 func
@@ -705,9 +747,10 @@ src:
     b = b.reorderCols(["hometown","state","population"])  
     
     // Simple test joins
-    if (expression == "inner") return innerJoin(a, b)
     if (expression == "left")  return leftJoin(a, b)
     if (expression == "right") return rightJoin(a, b)
+    if (expression == "inner") return innerJoin(a, b)
+    if (expression == "outer") return outerJoin(a, b)
     if (expression == "full")  return fullJoin(a, b)
     if (expression == "semi")  return semiJoin(a, b)
     if (expression == "anti")  return antiJoin(a, b)

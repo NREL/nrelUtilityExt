@@ -14,7 +14,7 @@ class Build : BuildPod
   {
     podName = "nrelUtilityExt"
     summary = "Missing Axon Utility Functions"
-    version = Version("1.1.2")
+    version = Version("1.1.3")
     meta    = [
                 "ext.name":        "nrelUtility",
                 "ext.icon24":      "fan://frescoRes/img/iconMissing24.png",

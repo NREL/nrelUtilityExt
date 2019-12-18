@@ -79,14 +79,17 @@ doc:
 src:
   (funcs, filename) => do
     // Check filename
-    if (not(filename.toStr.startsWith("io/"))) filename = "io/" + filename
-    if (not(filename.toStr.lower.endsWith(".trio"))) filename = filename + ".trio"
+    if (not(filename.toStr.startsWith("io/"))) filename = "io/" + filename.toStr
+    if (not(filename.toStr.lower.endsWith(".trio"))) filename = filename.toStr + ".trio"
+    
+    // Parse URI
+    if (not(filename.isUri)) filename = filename.parseUri
     
     // Write output
     funcs.toGrid
       .map(f => f.remove("id").remove("mod"))
       .sort("name")
-      .ioWriteTrio(filename.parseUri)
+      .ioWriteTrio(filename)
   end
 ---
 name:fullJoin
@@ -177,11 +180,14 @@ doc:
 src:
   (filename) => do
     // Check filename
-    if (not(filename.toStr.startsWith("io/"))) filename = "io/" + filename
-    if (not(filename.toStr.lower.endsWith(".trio"))) filename = filename + ".trio"
+    if (not(filename.toStr.startsWith("io/"))) filename = "io/" + filename.toStr
+    if (not(filename.toStr.lower.endsWith(".trio"))) filename = filename.toStr + ".trio"
+    
+    // Parse URI
+    if (not(filename.isUri)) filename = filename.parseUri
     
     // Read and commit functions
-    ioReadTrio(filename.parseUri)
+    ioReadTrio(filename)
       .findAll(rec => rec.has("func"))
       .each() f => commit(diff(null, f, {add}))
   end

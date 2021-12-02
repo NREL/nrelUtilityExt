@@ -14,7 +14,7 @@ class Build : BuildPod
   {
     podName = "nrelUtilityExt"
     summary = "Missing Axon Utility Functions"
-    version = Version("1.1.3")
+    version = Version("1.1.4")
     meta    = [
                 "ext.name":        "nrelUtility",
                 "ext.icon24":      "fan://frescoRes/img/iconMissing24.png",
@@ -26,7 +26,7 @@ class Build : BuildPod
                 "license.name":    "BSD-3",
                 "skyspark.docExt": "true",
               ]
-    depends = ["sys 1.0", "axon 3.0", "ioExt 3.0"]
+    depends = ["sys 1.0", "axon 3.0+", "hxIO 3.1+"]
     resDirs = [`locale/`,
                `lib/`]
     index   =

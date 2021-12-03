@@ -215,3 +215,7 @@ A brief sampling of other useful functions:
   from a list or dict
   
 For a complete list, see [the function listing]`ext-nrelUtility::index`.
+
+For a change log, see the Releases section of the
+[nrelUtilityExt]`https://github.com/NREL/nrelUtilityExt/releases/`
+repository on GitHub.

@@ -1,6 +1,6 @@
 #! /usr/bin/env fan
 
-// Copyright (C) 2018, National Renewable Energy Laboratory
+// Copyright (C) 2021, Alliance for Sustainable Energy, LLC
 // All Rights Reserved
 
 using build
@@ -8,17 +8,18 @@ using build
 **
 ** Build: nrelUtilityExt
 **
+
 class Build : BuildPod
 {
   new make()
   {
     podName = "nrelUtilityExt"
     summary = "Missing Axon Utility Functions"
-    version = Version("1.1.3")
+    version = Version("1.1.4")
     meta    = [
                 "ext.name":        "nrelUtility",
-                "ext.icon24":      "fan://frescoRes/img/iconMissing24.png",
-                "ext.icon72":      "fan://frescoRes/img/iconMissing72.png",
+                "ext.depends":     "io",
+                "ext.icon":        "paperAirplane",
                 "org.name":        "NREL",
                 "org.uri":         "https://www.nrel.gov/",
                 "proj.name":       "NREL Utility Extension",
@@ -26,13 +27,8 @@ class Build : BuildPod
                 "license.name":    "BSD-3",
                 "skyspark.docExt": "true",
               ]
-    depends = ["sys 1.0", "axon 3.0", "ioExt 3.0"]
-    resDirs = [`locale/`,
-               `lib/`]
-    index   =
-    [
-      "skyarc.ext": "nrelUtilityExt",
-    ]
+    resDirs = [`locale/`, `lib/`]
+    index   = ["skyarc.ext": "nrelUtilityExt"]
   }
   
   // To publish to StackHub, use: bin/fan /path/to/build.fan publish 

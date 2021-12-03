@@ -17,8 +17,8 @@ Build instructions:
 1. Create a local clone of this repository on a computer with a working copy of SkySpark.
 2. From the command line, change directory to the SkySpark root directory.
 3. Execute `bin/fan /path/to/nrelUtilityExt/build.fan`.
-   * On Linux, you may need to `chmod +x bin/fan` first.
-   * Output pod will be `lib/fan/nrelUtilityExt.pod` (relative to SkySpark root).
+   - On Linux, you may need to `chmod +x bin/fan` first.
+   - Output pod will be `lib/fan/nrelUtilityExt.pod` (relative to SkySpark root).
 4. Execute `bin/fan docgen` to regenerate documentation.
 
 Build instructions are the same for Windows except paths use backslashes `\` and `fan` becomes
@@ -48,16 +48,29 @@ SkySpark.
    installation (Linux/Mac).
 4. From the command line, change directory to the SkySpark root directory.
 5. Execute `bin/fan docgen` to regenerate documentation.
-   * Optional; the functions will work without this step but the *Help* app won't show any
+   - Optional; the functions will work without this step but the *Doc* app won't show any
      function documentation.
-   * On Linux, you may need to `chmod +x bin/fan` first.
+   - On Linux, you may need to `chmod +x bin/fan` first.
 6. Start (or restart) SkySpark.
 
-Help
-----
+### From StackHub ###
 
-Function help is available in the SkySpark *Help* app under *nrelUtility* or within the help
-interface in the *Func* app.
+**nrelUtilityExt** is also available [from StackHub]. SkySpark supports direct
+installation via Stackhub:
+
+1. Open the *Host* app.
+2. Navigate to the *Install* tab.
+3. Click the *Install* button and search for "nrelUtilityExt".
+4. Select the extension when it appears, click *Next*, select the desired
+   version, and complete the installation.
+
+[from StackHub]: https://stackhub.org/package/nrelUtilityExt "StackHub"
+
+Documentation
+-------------
+
+Function documentation is available in the SkySpark *Doc* app under *nrelUtility* or
+within the *Docs* interface in the *Code* app.
 
 License
 -------

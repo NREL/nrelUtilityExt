@@ -6,7 +6,7 @@ for the [Axon] programming language. This package is developed and provided free
 [National Renewable Energy Laboratory].
 
 [SkySpark]: http://skyfoundry.com/skyspark/ "SkySpark"
-[Axon]: https://skyfoundry.com/doc/docSkySpark/AxonLang "Axon Language"
+[Axon]: https://skyfoundry.com/doc/docHaxall/AxonLang "Axon Language"
 [National Renewable Energy Laboratory]: https://www.nrel.gov
 
 Build
@@ -75,5 +75,6 @@ within the *Docs* interface in the *Code* app.
 License
 -------
 
-This software is licensed for use under the terms of the Berkeley Software Distribution 3-clause (BSD-3) license; see `LICENSE.md`.
+This software is licensed for use under the terms of the Berkeley Software
+Distribution 3-clause (BSD-3) license; see `LICENSE.md`.
 

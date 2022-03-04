@@ -14,7 +14,7 @@ class Build : BuildPod
   new make()
   {
     podName = "nrelUtilityExt"
-    summary = "Missing Axon Utility Functions"
+    summary = "Missing Axon utility functions"
     version = Version("1.1.4")
     meta    = [
                 "ext.name":        "nrelUtility",

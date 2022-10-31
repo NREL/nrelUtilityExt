@@ -1,5 +1,4 @@
 name:antiJoin
-func
 doc:
   Returns all rows from 'a' where there are *not* matching values in 'b', keeping columns from 'a'
   only.
@@ -8,6 +7,7 @@ doc:
   [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
+func
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -18,14 +18,13 @@ src:
   end
 ---
 name:arity
-func
 doc:
   Given a function name 'fn', return the number of arguments the function accepts.
+func
 src:
   (fn) => params(fn).size
 ---
 name:dictToFilter
-func
 doc:
   Transform the contents of a dict into a string compatible with `parseFilter`. The resulting
   filter string matches records with tags that include all the name-value pairs in dict 'd'.
@@ -38,6 +37,7 @@ doc:
      but may cause downstream functions such as `parseFilter` to fail.
   3. Null values in 'd' will cause `parseFilter` to fail downstream; use the utility function
      `removeNull` as needed to clean the input.
+func
 src:
   (d) => do
     // Start filter string
@@ -62,7 +62,6 @@ src:
   end
 ---
 name:exportFunctions
-func
 doc:
   Exports a grid of functions 'funcs' to a tagged record input/output (TRIO) file 'filename' for
   reuse elsewhere. If missing, the "io/" prefix and ".trio" suffix are added to 'filename'
@@ -72,6 +71,7 @@ doc:
   --------
   
     readAll(func).exportFunctions("myFunctions")  >> Writes to `io/myFunctions.trio`
+func
 src:
   (funcs, filename) => do
     // Check filename
@@ -89,7 +89,6 @@ src:
   end
 ---
 name:fullJoin
-func
 doc:
   Returns all rows and columns from both 'a' and 'b'. Rows in 'a' with no match in 'b' will have
   missing entries in the columns joined from 'b', and vice versa.
@@ -98,6 +97,7 @@ doc:
   [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
+func
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -109,12 +109,12 @@ src:
   end
 ---
 name:hasAll
-func
 doc:
   Returns *true* if 'x' has all the elements in 'names'.
   
   - For dicts, search by key names
   - For grids, search by column names
+func
 src:
   (x, names) => do
     // Ensure names is a list
@@ -136,12 +136,12 @@ src:
   end
 ---
 name:hasAny
-func
 doc:
   Returns *true* if 'x' has any of the elements in 'names'.
   
   - For dicts, search by key names
   - For grids, search by column names
+func
 src:
   (x, names) => do
     // Ensure names is a list
@@ -163,7 +163,6 @@ src:
   end
 ---
 name:importFunctions
-func
 doc:
   Imports a tagged record input/output (TRIO) file of functions and commits them to the Folio.
   If missing, the "io/" prefix and ".trio" suffix are added to 'filename' automatically. See also
@@ -173,6 +172,7 @@ doc:
   --------
   
     importFunctions("myFunctions")  >> Reads from `io/myFunctions.trio`
+func
 src:
   (filename) => do
     // Check filename
@@ -189,14 +189,13 @@ src:
   end
 ---
 name:in
-func
 doc:
   Convenience for 'b.contains(a)'; see `contains`.
+func
 src:
   (a, b) => b.contains(a)
 ---
 name:innerJoin
-func
 doc:
   Returns all rows from 'a' where there are matching values in 'b' and all columns from 'a' and 'b'.
   If there are multiple matches between 'a' and 'b', all combinations of the matches are returned.
@@ -205,6 +204,7 @@ doc:
   [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
+func
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -215,7 +215,6 @@ src:
   end
 ---
 name:intersect
-func
 doc:
   Returns the set intersection of two lists or dicts 'a' and 'b'. Behavior for dicts differs by
   'checked':
@@ -232,6 +231,7 @@ doc:
     intersect({a, b:1}, {a, b:1})         >> {a, b:1}
     intersect({a, b:1}, {a, b:2})         >> error
     intersect({a, b:1}, {a, b:2}, false)  >> {a}
+func
 src:
   (a, b, checked:true) => do
     // Lists
@@ -265,22 +265,23 @@ src:
   end
 ---
 name:isNA
-func
 doc:
   Returns *true* if 'val' is equal to NA, *false* otherwise.
+func
 src:
   (val) => val == na() 
 ---
 name:isNull
-func
 doc:
   Returns *true* if 'val' is null, *false* otherwise.
+func
 src:
   (val) => val == null
 ---
 name:joinWithMethod
 func
 nodoc
+func
 src:
   // Core implementation of *Join functions
   (method, a, b, by, opts) => do
@@ -500,7 +501,6 @@ src:
   end
 ---
 name:leftJoin
-func
 doc:
   Returns all rows from 'a' and all columns from 'a' and 'b'. Rows in 'a' with no match in 'b' will
   have missing entries in the columns joined from 'b'. If there are multiple matches between 'a' and
@@ -510,6 +510,7 @@ doc:
   [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
+func
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -520,59 +521,58 @@ src:
   end
 ---
 name:outerJoin
-func
 doc:
   Alias for `fullJoin`.
+func
 src:
   (a, b, by:null, opts:{}) => fullJoin(a, b, by, opts)
 ---
 name:parseRef2
-func
 doc:
   Convenience wrapper for `parseRef` that supports leading "@" without throwing error.
+func
 src:
   (val, checked:true) => do
     if (val.startsWith("@")) parseRef(val[1..-1], checked) else parseRef(val, checked)
   end
 ---
 name:removeNA
-func
 doc:
   Removes NA values from list or dict 'x'.
   
   Side effects: may rearrange dict key order.
+func
 src:
   (x) => x.findAll() v => v != na()
 ---
 name:removeNaN
-func
 doc:
   Removes NaN values from list or dict 'x'.
   
   Side effects: may rearrange dict key order.
+func
 src:
   (x) => x.findAll() v => not v.isNaN
 ---
 name:removeNull
-func
 doc:
   Removes null values from list or dict 'x'.
   
   Side effects: may rearrange dict key order.
+func
 src:
   (x) => x.findAll() v => v != null
 ---
 name:removeVal
-func
 doc:
   Remove any elements from list or dict 'x' that equal 'val'.
   
   Side effects: may rearrange dict key order.
+func
 src:
   (x, val) => x.findAll() v => v != val
 ---
 name:rep
-func
 doc:
   Replicate the value 'x' the specified number of 'times'. Returns a list.
   
@@ -581,6 +581,7 @@ doc:
   
     rep(1, 2)               >> [1,1]
     rep("A", 3).concat("")  >> "AAA"
+func
 src:
   (x, times) => do
     out: []
@@ -589,7 +590,6 @@ src:
   end
 ---
 name:replace2
-func
 doc:
   Convenience wrapper for `replace` that also allows processing of URIs or dicts.
   
@@ -599,6 +599,7 @@ doc:
   
   For dicts and lists, the string replacement is not recursive. (For instance, the replacement will
   not reach inside of dicts nested within lists.)
+func
 src:
   (val, from, to) => do
     // Convenience URI replacement function
@@ -621,7 +622,6 @@ src:
   end
 ---
 name:rightJoin
-func
 doc:
   Returns all rows from 'b' and all columns from 'a' and 'b'. Rows in 'b' with no match in 'a' will
   have missing entries in the columns joined from 'a'. If there are multiple matches between 'a' and
@@ -631,6 +631,7 @@ doc:
   [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
+func
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -641,7 +642,6 @@ src:
   end  
 ---
 name:semiJoin
-func
 doc:
   Returns all rows from 'a' where there are matching values in 'b', keeping columns from 'a' only.
   Differs from `innerJoin` in that it will never duplicate rows of 'a'.
@@ -650,6 +650,7 @@ doc:
   [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
+func
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -661,7 +662,6 @@ src:
   end
 ---
 name:setDiff
-func
 doc:
   Returns the set difference of two lists or dicts 'a' and 'b': all elements of 'a' that are not in
   'b'.
@@ -676,6 +676,7 @@ doc:
     setDiff({a, b}, {a, c})       >> {b}
     setDiff({a, b:1}, {b:2})      >> {a}
     setDiff({a, b:1}, {-b})       >> {a}
+func
 src:
   (a, b) => do
     // Lists
@@ -693,10 +694,10 @@ src:
   end
 ---
 name:stringToDict
-func
 doc:
   Converts a string of comma-separated values to a dict using `eval`. Automatically adds brackets
   '{' '}' if needed.
+func
 src:
   (s) => do
     // Trim whitespace
@@ -711,10 +712,10 @@ src:
   end
 ---
 name:stringToList
-func
 doc:
   Converts a string of comma-separated values to a list using `eval`. Automatically adds brackets
   '[' ']' if needed.
+func
 src:
   (s) => do
     // Trim whitespace
@@ -731,6 +732,7 @@ src:
 name:testJoin
 func
 nodoc
+func
 src:
   // Test harnass for *Join functions
   (expression) => do
@@ -763,7 +765,6 @@ src:
   end
 ---
 name:union
-func
 doc:
   Returns the set union of two lists or dicts 'a' and 'b'. Behavior for dicts differs by
   'checked':
@@ -782,6 +783,7 @@ doc:
     union({a, b:1}, {a, b:1})         >> {a, b:1}
     union({a, b:1}, {a, b:2})         >> error
     union({a, b:1}, {a, b:2}, false)  >> {a, b:1}
+func
 src:
   (a, b, checked:true) => do
     // Lists

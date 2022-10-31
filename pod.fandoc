@@ -221,7 +221,7 @@ A brief sampling of other useful functions:
 
 - `importFunctions` and `exportFunctions` facilitate moving functions among projects
 - `hasAny` and `hasAll` are extensions of `has` to multiple keys
-- `isNA` complements `isNull, `isNaN`, and the various other core 'is*' funtions
+- `isNA` complements `isNull`, `isNaN`, and the various other core 'is*' funtions
 - `removeNA`, `removeNaN`, `removeNull`, and `removeVal` remove NAs, NaNs, nulls, or specific values
   from a list or dict
   

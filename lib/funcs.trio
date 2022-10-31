@@ -59,29 +59,53 @@ src:
 ---
 name:exportFunctions
 doc:
-  Exports a grid of functions 'funcs' to a tagged record input/output (TRIO) file 'filename' for
-  reuse elsewhere. If missing, the "io/" prefix and ".trio" suffix are added to 'filename'
-  automatically. See also `importFunctions`. 
+  Exports one or more **functions** to a tagged record input/output (TRIO) file at the specified **handle**. See also `importFunctions`.
   
-  Examples
-  --------
+  Options
+  -------
   
-    readAll(func).exportFunctions("myFunctions")  >> Writes to `io/myFunctions.trio`
+  Export behavior can be modified by control options passed by **opts**:
+  
+  - 'merge': Dict to merge onto functions prior to export
+  - 'preview': Boolean; if 'true' previews the export (see below)
+  - 'sort': Tag name or function for sorting **functions** prior to export; see `sort` (default = "name")
+  
+  If 'preview == true', returns the list of records that would have been written to **handle**. The 'preview' option may be also be passed as a marker, with 'preview' equivalent to 'preview:true' and '-preview' equivalent to 'preview:false'.
+  
+  If the 'sort' option is missing (e.g. by passing '-sort') or invalid, then the function records are not sorted prior to export. If 'sort' is present but is not a string or a function, then it is ignored (with a warning).
 func
 src:
-  (funcs, filename) => do
-    // Check filename
-    if (not(filename.toStr.startsWith("io/"))) filename = "io/" + filename.toStr
-    if (not(filename.toStr.lower.endsWith(".trio"))) filename = filename.toStr + ".trio"
+  (functions, handle, opts:{sort:"name"}) => do
+    // Default options
+    opts = {sort:"name"}.merge(opts)
+  
+    // T/F options
+    opts = opts.set("preview", opts.has("preview")  and opts["preview"] != false)
+  
+    // Check sort option
+    if (opts.has("sort") and not opts->sort.isFunc and not opts->sort.isStr) do
+      logWarn("exportFuncs", "'sort' option is not a string or function; ignoring.")
+      opts = opts.remove("sort")
+    end
+  
+    // Parse handle
+    if (not(handle.isUri)) handle = handle.parseUri
     
-    // Parse URI
-    if (not(filename.isUri)) filename = filename.parseUri
+    // Coerce to grid
+    functions = functions.toGrid
     
+    // Optional merge and sort
+    if (opts.has("merge")) functions = functions.map(f => f.merge(opts->merge))
+    if (opts.has("sort"))  functions = functions.sort(opts->sort)
+    
+    // Remove 'id' and 'mod'
+    functions = functions.map(f => f.remove("id").remove("mod"))
+    
+    // Preview mode
+    if (opts->preview) return functions
+  
     // Write output
-    funcs.toGrid
-      .map(f => f.remove("id").remove("mod"))
-      .sort("name")
-      .ioWriteTrio(filename)
+    functions.ioWriteTrio(handle)
   end
 ---
 name:fullJoin
@@ -160,28 +184,202 @@ src:
 ---
 name:importFunctions
 doc:
-  Imports a tagged record input/output (TRIO) file of functions and commits them to the Folio.
-  If missing, the "io/" prefix and ".trio" suffix are added to 'filename' automatically. See also
-  `exportFunctions`. 
+  Imports functions from **source**, and optionally commits them to the Folio. Supported data types for **source** are:
   
-  Examples
-  --------
+  - Str: Parsed as [TRIO]`docHaystack::Trio` using `ioReadTrio`
+  - Uri: Parsed as TRIO using `ioReadTrio`
+  - Anything supported by `toRecList`: The 'func' records to be imported as a list of Dicts
   
-    importFunctions("myFunctions")  >> Reads from `io/myFunctions.trio`
+  Other actions taken on import:
+  
+  - Ignores any records not tagged with 'func'
+  - Drops 'func' records missing 'name' or 'src' tags (with a warning)
+  - Removes existing 'id' and 'mod' tags from imported records
+  
+  Options
+  -------
+  
+  Import behavior can be modified by control options passed by **opts**:
+  
+  - 'commit': Boolean; if 'true' commits the imported functions to the database (default = 'false')
+  - 'conflict': Action on conflicts; one of "skip", "overwrite", or "rename" (default = "skip")
+  - 'filter': Str compatible with `parseFilter`; filters (subsets) the imported function records
+  - 'merge': Dict to merge onto imported functions
+  - 'preview': Boolean; if 'true' previews the import (see below)
+  - 'warn': Boolean; if 'true' log warnings (default = 'true')
+  
+  The 'commit', 'preview', and 'warn' options may be also be passed as markers, with 'x' equivalent to 'x:true' and '-x' equivalent to 'x:false'.
+  
+  Conflicts
+  ---------
+  
+  Conflicts with existing functions (matched by 'name') are handled based on the 'conflict' option:
+  
+  - skip: Skip import
+  - overwrite: Merge imported function onto existing function, overwriting it
+  - rename: Rename imported function by appending an integer
+  
+  Renaming will increment the appended integer until no conflict exists. For example, if the imported function is called 'foo' but functions 'foo' and 'foo1' already exist, then the imported function will be renamed 'foo2'.
+  
+  Previewing Functions
+  --------------------
+  
+  Enabling the 'preview' option returns a grid summarizing the functions to be imported, whether they already exist, and what action will be taken on conflicts. The grid returned has columns:
+  
+  - 'name': Name of the function
+  - 'rec': Nested dict with full function record
+  - 'exists': Marker; whether the function already exists
+  - 'action': Str; action that will be taken
+  
+  Enabling 'preview' overrides 'commit' and 'warn' to 'false'. Note that if 'preview' is 'false' and 'commit' is 'false', the function records themselves are returned (not the summary grid described above).
 func
 src:
-  (filename) => do
-    // Check filename
-    if (not(filename.toStr.startsWith("io/"))) filename = "io/" + filename.toStr
-    if (not(filename.toStr.lower.endsWith(".trio"))) filename = filename.toStr + ".trio"
+  (source, opts:{}) => do
+    // Default options
+    opts = {conflict:"skip", warn:true}.merge(opts)
     
-    // Parse URI
-    if (not(filename.isUri)) filename = filename.parseUri
+    // T/F options
+    opts = opts.set("preview", opts.has("preview")  and opts["preview"] != false                      )
+    opts = opts.set("commit",  opts.has("commit")   and opts["commit"]  != false and not opts->preview)
+    opts = opts.set("warn",    opts.has("warn")     and opts["warn"]    != false and not opts->preview)
     
-    // Read and commit functions
-    ioReadTrio(filename)
-      .findAll(rec => rec.has("func"))
-      .each() f => commit(diff(null, f, {add}))
+    // Action on conflict
+    opts = opts.set("conflict", opts->conflict.lower)
+    if (not opts->conflict.in(["skip", "overwrite", "rename"])) do
+      throw "'conflict' option must be one of: \"skip\", \"overwrite\", \"rename\""
+    end
+    
+    // Str or Uri: Read funcs from TRIO
+    if (source.isStr or source.isUri) do
+      funcs: ioReadTrio(source).findAll(rec => rec.has("func"))
+      
+    // Anything else: Should already contain the func records as list of Dicts
+    else do
+      funcs: source.toRecList
+    end
+    
+    // Disambiguate with suffix
+    disambiguateName: (n, i) => do
+      // New name
+      newName: n + i.toStr
+      if (read(func and name==newName, false) == null) return newName
+      disambiguateName(n, i+1)
+    end
+    
+    // For tracking
+    noName: 0
+    noSrc: 0
+    
+    // Apply filter
+    if (opts.has("filter")) do
+      // Verify filter
+      if (not opts->filter.isStr) do
+        throw "'filter' option must be a Str."
+      else do
+        filterFunc: parseFilter(opts->filter).filterToFunc
+      end
+      
+      // Filter imported records
+      funcs = funcs.findAll(filterFunc)
+    end
+    
+    // Process funcs
+    funcs = funcs.map() f => do
+      // Check for 'name' and 'src' tags
+      if (f.missing("name") or f.missing("src")) do
+        noName = noName + (if (f.missing("name")) 1 else 0)
+        noSrc  = noSrc  + (if (f.missing("src"))  1 else 0)
+        return null
+      end
+      
+      // Check for existing
+      exists: read(func and name==f->name, false) != null
+      
+      // Action
+      action: if (exists) opts->conflict else "new"
+      
+      // Remove any existing 'id' and 'mod' tags
+      f = f.remove("id").remove("mod")
+      
+      // Merge template
+      if (opts.has("merge")) f = f.merge(opts->merge)
+      
+      // Preview
+      if (opts->preview) do
+        preview: {name:f->name, rec:f, action:action}
+        if (exists) do
+          preview = preview.set("exists", marker())
+        else do
+          preview = preview.set("exists", null)
+        end
+        return preview
+      end
+      
+      // Action: New
+      if (action == "new") do
+        return f
+      
+      // Action: Skip
+      else if (action == "skip")
+        return null
+      
+      // Action: Overwrite
+      else if (action == "overwrite") do
+        return read(func and name==f->name).merge(f)
+      
+      // Action: Rename
+      else if (action == "rename") do
+        return f.set("name", disambiguateName(f->name, 1))
+      
+      // Invalid action
+      else do
+        throw "Invalid action: " + action
+      end
+    end
+    
+    // Remove nulls
+    funcs = funcs.removeNull
+    
+    // Log warning for functions with no name
+    if (noName > 1 and opts->warn) do
+      logWarn("importFuncs", noName + " functions without a 'name' tag were dropped.")
+    else if (noName == 1 and opts->warn) do    
+      logWarn("importFuncs", noName + " function without a 'name' tag was dropped.")
+    end
+  
+    // Log warning for functions with no source
+    if (noSrc > 1 and opts->warn) do
+      logWarn("importFuncs", noSrc + " functions without a 'src' tag were dropped.")
+    else if (noName == 1 and opts->warn) do    
+      logWarn("importFuncs", noSrc + " function without a 'src' tag was dropped.")
+    end
+  
+    // Preview mode
+    if (opts->preview) do
+      return funcs.toGrid.reorderCols(["name", "rec", "exists", "action"])
+    end
+    
+    // Commit mode
+    if (opts->commit) do
+      // Create diffs
+      diffs: funcs.map() f => do
+        // Existing
+        if (f.has("id")) do
+          diff(f.toRecId.readById, f.remove("id").remove("mod"))
+          
+        // New
+        else do
+          diff(null, f, {add})
+        end
+      end
+      
+      // Commit
+      return diffs.commit
+    end
+    
+    // Default
+    return funcs
+    
   end
 ---
 name:in

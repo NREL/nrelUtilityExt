@@ -79,10 +79,14 @@ To contribute to `nrelUtilityExt`, please feel free to open an issue or a submit
 
 1. Put `lib/funcs.trio` in your SkySpark project's `io` directory
 2. Run:
-     importFunctions(`io/funcs.trio`, merge:{nrelUtilityExtDev})
+   ```
+   importFunctions(`io/funcs.trio`, merge:{nrelUtilityExtDev})
+   ```
 3. Make changes
 4. Run:
-     readAll(nrelUtilityExtDev).exportFunctions(`io/funcs.trio`, merge:{-nrelUtilityExtDev})
+   ``` 
+   readAll(nrelUtilityExtDev).exportFunctions(`io/funcs.trio`, merge:{-nrelUtilityExtDev})
+   ```
 5. Commit the modified `funcs.trio` to your copy of the repo.
 
 Using the `nrelUtilityExtDev` "flag" tag here makes it easy to locate and export the correct set of functions.

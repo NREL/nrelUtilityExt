@@ -19,10 +19,10 @@ src:
 ---
 name:arity
 doc:
-  Given a function name 'fn', return the number of arguments the function accepts.
+  Given function **fun**, return the number of arguments the function accepts.
 func
 src:
-  (fn) => params(fn).size
+  (fun) => params(fun).size
 ---
 name:dictToFilter
 doc:

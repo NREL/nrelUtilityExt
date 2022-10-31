@@ -12,7 +12,7 @@ src:
   (a, b, by:null, opts:{}) => do
     // Input check
     if (a.isEmpty or b.isEmpty) return a
-
+  
     // Execute join
     joinWithMethod("anti", a, b, by, opts)
   end
@@ -123,7 +123,7 @@ src:
     // Input check
     if (a.isEmpty) return b
     if (b.isEmpty) return a
-
+  
     // Execute join
     joinWithMethod("full", a, b, by, opts)
   end
@@ -139,18 +139,18 @@ src:
   (x, names) => do
     // Ensure names is a list
     if (not(names.isList)) throw "'names' must be a list of strings."
-    
+  
     // On any missing name, return false
     if (x.isGrid) do
       out: names.eachWhile() n => if (n.in(x.colNames)) null else false
-    
+  
     else if (x.isDict) do
       out: names.eachWhile() n => if (x.has(n)) null else false
-    
+  
     else do
       throw "'x' must be a dict or grid."
     end
-    
+  
     // Return: null => true, false => false
     if (out == null) return true else return false
   end
@@ -166,18 +166,18 @@ src:
   (x, names) => do
     // Ensure names is a list
     if (not(names.isList)) throw "'names' must be a list of strings."
-    
+  
     // On any matched name, return true
     if (x.isGrid) do
       out: names.eachWhile() n => if (n.in(x.colNames)) true else null
-    
+  
     else if (x.isDict) do
       out: names.eachWhile() n => if (x.has(n)) true else null
-    
+  
     else do
       throw "'x' must be a dict or grid."
     end
-    
+  
     // Return: true => true, null => false
     if (out == null) return false else return true
   end
@@ -383,11 +383,9 @@ src:
   end
 ---
 name:in
-doc:
-  Convenience for 'b.contains(a)'; see `contains`.
+doc:"Convenience for 'b.contains(a)'; see `contains`."
 func
-src:
-  (a, b) => b.contains(a)
+src:"(a, b) => b.contains(a)"
 ---
 name:innerJoin
 doc:
@@ -403,7 +401,7 @@ src:
   (a, b, by:null, opts:{}) => do
     // Input check
     if (a.isEmpty or b.isEmpty) return [].toGrid
-
+  
     // Execute join
     joinWithMethod("inner", a, b, by, opts)
   end
@@ -416,7 +414,7 @@ doc:
   - If 'checked' is *true*, verifies that keys included in both 'a' and 'b' have matching values,
     and throws an error on mismatch.
   - If 'checked' is *false*, excludes name-value pairs with matching keys but differing values.
-
+  
   Examples
   --------
   
@@ -431,15 +429,15 @@ src:
     // Lists
     if(a.isList and b.isList) do
       return a.findAll(v => b.contains(v)).unique
-    
+  
     // Dicts
     else if(a.isDict and b.isDict) do
       // Common names
       cn: a.names.findAll() n => b.names.contains(n)
-      
+  
       // Filter
       a = a.findAll() (v, n) => cn.contains(n)
-      
+  
       // Value matching
       if (checked) do
         // Values must match
@@ -448,10 +446,10 @@ src:
         // Discard keys with mismatched values
         a.each() (v, n) => if (b[n] != v) a = a.remove(n)
       end
-      
+  
       // Return
       return a
-    
+  
     // Other
     else do
       throw "Invalid arguments; need two lists or two dicts."
@@ -459,38 +457,33 @@ src:
   end
 ---
 name:isNA
-doc:
-  Returns *true* if 'val' is equal to NA, *false* otherwise.
+doc:"Returns *true* if 'val' is equal to NA, *false* otherwise."
 func
-src:
-  (val) => val == na() 
+src:"(val) => val == na()"
 ---
 name:isNull
-doc:
-  Returns *true* if 'val' is null, *false* otherwise.
+doc:"Returns *true* if 'val' is null, *false* otherwise."
 func
-src:
-  (val) => val == null
+src:"(val) => val == null"
 ---
 name:joinWithMethod
+doc:"Core implementation of '*Join()' functions."
 func
 nodoc
-func
 src:
-  // Core implementation of *Join functions
   (method, a, b, by, opts) => do
-    
+  
     //// Options ///////////////////////////////////////////////////////////////////////////////////
-    
+  
     // Option type checking
     if (not(opts.isDict)) throw "'opts' must be a dict."
-        
+  
     // Method
     method = method.lower
-    
+  
     // Merge defaults
     opts = {keep:"both", suffix:{a:"a", b:"b"}}.merge(opts)
-    
+  
     // Sanitize 'keep' option
     opts = opts.set("keep", opts->keep.lower)
     if (not(opts["keep"].in(["a", "b", "both", "neither", "drop", "na"]))) do
@@ -498,7 +491,7 @@ src:
     end
     if (opts["keep"] == "drop") opts = opts.set("keep", "neither")
     if (method.in(["semi","anti"])) opts = opts.set("keep", "a") // Override for antiJoin, semiJoin
-    
+  
     // Sanitize 'suffix' option
     if (opts["suffix"].isList) do
       if (opts->suffix.size < 2) throw "List for option 'suffix' must have two elements."
@@ -511,20 +504,20 @@ src:
     end else do
       throw "Option 'suffix' must be a list or dict."
     end
-    
+  
     //// Join Columns //////////////////////////////////////////////////////////////////////////////
-    
+  
     // Null: Natural join
     if (by == null) do
       by = intersect(colNames(a),colNames(b))
     end
-    
+  
     // String: Single column
     if (by.isStr) do
       by = {}.set(by, by)
     end
-    
-    // List: Multiple columns with same name 
+  
+    // List: Multiple columns with same name
     if (by.isList) do
       by.each() v => do
         if (not(v.isStr)) throw "Each element of 'by' must be a string."
@@ -533,57 +526,57 @@ src:
       by.each() v => newBy = newBy.set(v, v)
       by = newBy
     end
-    
-    // Dict: Multiple columns with same or different names 
+  
+    // Dict: Multiple columns with same or different names
     if (by.isDict) do
       by.each() v => do
         if (not(v.isStr)) throw "Each element of 'by' must be a string."
       end
-    
+  
     // Other: Error
     else do
       throw "If specified, 'by' must be a string, list, or dict containing valid column names."
     end
-    
+  
     // Check results
     by.each() (v, n) => do
       if (a.missing(n)) throw "Column \"" + n + "\" is missing from grid 'a'."
       if (b.missing(v)) throw "Column \"" + v + "\" is missing from grid 'b'."
     end
-    
+  
     // Key names = grid A columns, key values = grid B columns
-      
+  
     //// Merge Action Function /////////////////////////////////////////////////////////////////////
-    
+  
     joinMerge: (rowA, rowB, overlap, keep) => do
       // On conflict: keep A
       if (keep == "a") return merge(rowB, rowA)
-
+  
       // On conflict: keep B
       if (keep == "b") return merge(rowA, rowB)
-
+  
       // On conflict: keep both (columns already renamed)
       if (keep == "both") return merge(rowB, rowA)
-
+  
       // Find conflicts
       conflict: overlap.findAll() n => rowA.has(n) and rowB.has(n) and rowA[n] != rowB[n]
-
+  
       // On conflict: drop
       if (keep == "neither") do
         return merge(rowB, rowA).map((v, n) => if (n.in(conflict)) null else v)
       end
-
+  
       // On conflict: convert to NA
       if (keep == "na") do
         return merge(rowB, rowA).map((v, n) => if (n.in(conflict)) na() else v)
       end
     end
-    
+  
     //// Setup /////////////////////////////////////////////////////////////////////////////////////
-    
+  
     // Initialize output grid
     out: {}.toGrid
-    
+  
     // Check for conflicts (Left, Right, Inner, and Full joins only)
     if (method.in(["left", "right", "inner", "full"])) do
       // Overlapping columns (possible sources of conflicts)
@@ -591,7 +584,7 @@ src:
         colNames(a).setDiff(names(by)),
         colNames(b).setDiff(vals(by))
       )
-
+  
       // Preemptive column renaming
       if (opts->keep == "both") do
         overlap.each() n => do
@@ -600,19 +593,19 @@ src:
         end
       end
     end
-    
+  
     //// Perform Join //////////////////////////////////////////////////////////////////////////////
-    
+  
     // LEFT, INNER, FULL (Common and A-unique rows)
     if (method.in(["left", "inner", "full"])) do
-      
+  
       // Iterate on rows of A
       a.each() rowA => do
         // Find matches in B
         match: b.findAll() rowB => do
           by.all() (colB, colA) => rowA[colA] == rowB[colB]
         end
-
+  
         // No matches
         if (match.isEmpty) do
           if (method.lower == "inner") do
@@ -620,7 +613,7 @@ src:
           else do
             out = out.addRow(rowA) // LEFT, FULL
           end
-
+  
         // Matches
         else do
           out = out.addRows(
@@ -629,23 +622,23 @@ src:
           )
         end
       end
-      
+  
     end
-    
+  
     // RIGHT, FULL (B-unique rows)
     if (method.in(["right", "full"])) do
-      
+  
       // Iterate rows of B
       b.each() rowB => do
         // Find matches in A
         match: a.findAll() rowA => do
           by.all() (colB, colA) => rowA[colA] == rowB[colB]
         end
-
+  
         // No matches
         if (match.isEmpty) do
           out = out.addRow(rowB) // RIGHT, FULL
-
+  
         // Matches
         else if (method.lower == "right") do
           // RIGHT
@@ -655,41 +648,41 @@ src:
           )
         end
       end
-      
+  
     end
-        
+  
     // SEMI, ANTI
     if (method.in(["semi","anti"])) do
-    
+  
       // Iterate on rows of A
       a.each() rowA => do
         // Check for matches in B
         match: b.find() rowB => by.all() (colB, colA) => rowA[colA] == rowB[colB]
-          
+  
         // SEMI
         if (match != null and method.lower == "semi") out = out.addRow(rowA)
-        
+  
         // ANTI
         if (match == null and method.lower == "anti") out = out.addRow(rowA)
       end
-      
+  
     end
-    
+  
     //// Metadata //////////////////////////////////////////////////////////////////////////////////
-    
+  
     // To Do: Handle merging of grid and column metadata
-    
+  
     //// Post-Processing ///////////////////////////////////////////////////////////////////////////
-    
+  
     // Fix column order
     if (method.in(["left", "right", "inner", "full"])) do
       // A + B
-      colOrder: union(colNames(a),colNames(b)).intersect(colNames(out))  
+      colOrder: union(colNames(a),colNames(b)).intersect(colNames(out))
     else if (method.in(["semi","anti"])) do
       // A only
       colOrder: colNames(a).intersect(colNames(out))
     end
-    
+  
     // Enforce unique entries, restore column order and return
     return out.unique(colOrder).reorderCols(colOrder)
   end
@@ -709,25 +702,184 @@ src:
   (a, b, by:null, opts:{}) => do
     // Input check
     if (a.isEmpty or b.isEmpty) return a
-
+  
     // Execute join
     joinWithMethod("left", a, b, by, opts)
   end
 ---
 name:outerJoin
-doc:
-  Alias for `fullJoin`.
+doc:"Alias for `fullJoin`."
 func
-src:
-  (a, b, by:null, opts:{}) => fullJoin(a, b, by, opts)
+src:"(a, b, by:null, opts:{}) => fullJoin(a, b, by, opts)"
 ---
-name:parseRef2
+name:parseAuto
 doc:
-  Convenience wrapper for `parseRef` that supports leading "@" without throwing error.
+  Parse a Str **val**, automatically guessing its data type. Supports all [Zinc]`docHaystack::Zinc` data types plus the following keywords:
+  
+  - True: 'true', 'True', or 'TRUE' (as Bool)
+  - False: 'false, 'False', or 'FALSE' (as Bool)
+  - Null: 'null', 'Null', or 'NULL'
+  - NA: 'na', 'Na', or 'NA'
+  - Not a Number (NaN): 'nan', 'NaN', or 'NAN'
+  - Positive Infinity: '+inf', '+Inf', or '+INF'
+  - Negative Infinity: '-inf', '-Inf', or '-INF'
+  
+  For everything else, this function wraps `ioReadZinc`. The resulting parsing behavior supports most basic [Axon]`docHaxall::AxonLang` data types, but ranges, triple-quoted string literals, and raw string literals are not supported.
+  
+  If parsing fails and **checked** is 'false' returns null; otherwise throws an error.
 func
 src:
   (val, checked:true) => do
-    if (val.startsWith("@")) parseRef(val[1..-1], checked) else parseRef(val, checked)
+    // Try block
+    try do
+      // Check input
+      if (not val.isStr) throw "'val' must a string."
+      if (val.contains("\n")) throw "'val' must not contain newline characters."
+  
+      // Keywords: True, False, Null, NA, NaN, +Inf, -Inf
+      if (val == "true"  or val == "True"  or val == "TRUE" ) return true
+      if (val == "false" or val == "False" or val == "FALSE") return false
+      if (val == "null"  or val == "Null"  or val == "NULL" ) return null
+      if (val == "na"    or val == "Na"    or val == "NA"   ) return na()
+      if (val == "nan"   or val == "NaN"   or val == "NAN"  ) return nan()
+      if (val == "+inf"  or val == "+Inf"  or val == "+INF" ) return posInf()
+      if (val == "-inf"  or val == "-Inf"  or val == "-INF" ) return negInf()
+  
+      // Parse using ZINC grammar
+      return ioReadZinc("ver:\"3.0\"\nval\n" + val).first["val"] 
+    
+    // Catch block
+    catch (ex) do
+      if (checked) throw (ex)
+      return null
+    end
+    
+    // TO DO: Unit test(s)
+    // parseAuto("{a, b:0kW, c:[1, 2, 5], d:\"Three sir!\", e:{foo bar:\"baz\"}}")
+  end
+---
+name:parseCoord
+doc:
+  Parse a Coord **val**, which must consist of two number values separated by a comma. If parsing fails and checked = 'false' returns null; otherwise throws an error.
+  
+  - Numbers must be within the valid range per `coord`
+  - Numbers cannot have a unit
+  - Negative numbers must be preceded by '-'
+  - Enclosing parentheses '( )' are optional
+  - Spaces, tabs, and any preceding non-digit characters are ignored
+  
+  Examples:
+  
+    parseCoord("-42,105")                >> C(-42, 105)
+    parseCoord("coord(40.689, -74.044)") >> C(40.689, -74.044)
+func
+src:
+  (val, checked:true) => do
+    // Try block
+    try do
+      // Check for string
+      if (not val.isStr) throw "'val' must be a string."
+         
+      // Verify format: ignores preceding non-digits, whitespace, parens; handles negatives
+      // Try it out here: https://regex101.com/r/nXRx8d/1
+      regex: r"(?:[\D&&[^\-]]|\-\D)*(\-?\d+\.?\d*)\s*,\s*(\-?\d+\.?\d*)\)?\s*"
+      if (not reMatches(regex, val)) throw "Invalid format for 'val': \"" + val + "\""
+      
+      // Parse from groups
+      parts: reGroups(regex, val)
+      return coord(parseFloat(parts[1]), parseFloat(parts[2]))
+    
+    // Catch block
+    catch (ex) do
+      if (checked) throw (ex)
+      return null
+    end
+  end
+---
+name:parseDict
+doc:
+  Parse a Str **val** as a dict, which must be encoded as a valid [Zinc]`docHaystack::Zinc` dictionary. Because this function wraps `ioReadZinc`, it requires Zinc-style syntax rather than [Axon]`docHaxall::AxonLang` syntax for the following data types:
+  
+  - Null: 'N' instead of 'null'
+  - Boolean: 'T/F' instead of 'true/false'
+  
+  Also, ranges, triple-quoted string literals, and raw string literals are not supported.
+  
+  If parsing fails and **checked** is 'false' returns null; otherwise throws an error.
+func
+src:
+  (val, checked:true) => do
+    // Try block
+    try do
+      // Check input
+      if (not val.isStr) throw "'val' must a string."
+      if (val.contains("\n")) throw "'val' must not contain newline characters."
+      
+      // Trim
+      val = val.trim
+  
+      // Verify correct structure for a dict via regex
+      if (not(reMatches(r"\{.*\}", val))) do
+        throw "'val' must begin with \"{\" and end with \"}\"."
+      end
+  
+      // Parse using Zinc grammar
+      val = ioReadZinc("ver:\"3.0\"\nval\n" + val).first["val"]
+      
+      // Verify dict
+      if (not(val.isDict)) throw "'val' does not parse as a valid dict."
+      
+      // Return
+      return val
+      
+    // Catch block
+    catch (ex) do
+      if (checked) throw (ex)
+      return null
+    end
+  end
+---
+name:parseList
+doc:
+  Parse a Str **val** as a list, which must be encoded as a valid [Zinc]`docHaystack::Zinc` list. Because this function wraps `ioReadZinc`, it requires Zinc-style syntax rather than [Axon]`docHaxall::AxonLang` syntax for the following data types:
+  
+  - Null: 'N' instead of 'null'
+  - Boolean: 'T/F' instead of 'true/false'
+  
+  Also, ranges, triple-quoted string literals, and raw string literals are not supported.
+  
+  If parsing fails and **checked** is 'false' returns null; otherwise throws an error.
+func
+src:
+  (val, checked:true) => do
+    // Try block
+    try do
+      // Check input
+      if (not val.isStr) throw "'val' must a string."
+      if (val.contains("\n")) throw "'val' must not contain newline characters."
+      
+      // Trim
+      val = val.trim
+  
+      // Verify correct structure for a list via regex
+      if (not(reMatches(r"\[.*\]", val))) do
+        throw "'val' must begin with \"[\" and end with \"]\"."
+      end
+  
+      // Parse using Zinc grammar
+      val = ioReadZinc("ver:\"3.0\"\nval\n" + val).first["val"]
+      
+      // Verify dict
+      if (not(val.isList)) throw "'val' does not parse as a valid list."
+      
+      // Return
+      return val
+      
+    // Catch block
+    catch (ex) do
+      if (checked) throw (ex)
+      return null
+    end
   end
 ---
 name:removeNA
@@ -736,8 +888,7 @@ doc:
   
   Side effects: may rearrange dict key order.
 func
-src:
-  (x) => x.findAll() v => v != na()
+src:"(x) => x.findAll() v => v != na()"
 ---
 name:removeNaN
 doc:
@@ -745,8 +896,7 @@ doc:
   
   Side effects: may rearrange dict key order.
 func
-src:
-  (x) => x.findAll() v => not v.isNaN
+src:"(x) => x.findAll() v => not v.isNaN"
 ---
 name:removeNull
 doc:
@@ -754,8 +904,7 @@ doc:
   
   Side effects: may rearrange dict key order.
 func
-src:
-  (x) => x.findAll() v => v != null
+src:"(x) => x.findAll() v => v != null"
 ---
 name:removeVal
 doc:
@@ -763,8 +912,7 @@ doc:
   
   Side effects: may rearrange dict key order.
 func
-src:
-  (x, val) => x.findAll() v => v != val
+src:"(x, val) => x.findAll() v => v != val"
 ---
 name:rep
 doc:
@@ -789,7 +937,7 @@ doc:
   
   - If 'val' is a string, identical to `replace`
   - If 'val' is a URI, it is coerced to string, modified, and re-parsed as a URI
-  - If 'val' is a dict or list, all its string and URI elements have the replacement applied 
+  - If 'val' is a dict or list, all its string and URI elements have the replacement applied
   
   For dicts and lists, the string replacement is not recursive. (For instance, the replacement will
   not reach inside of dicts nested within lists.)
@@ -798,13 +946,13 @@ src:
   (val, from, to) => do
     // Convenience URI replacement function
     replaceUri: (v, f, t) => v.toStr.replace(f, t).parseUri
-    
+  
     // String
     if (val.isStr) return val.replace(from, to)
-    
+  
     // URI
     if (val.isUri) return val.replaceUri(from, to)
-    
+  
     // Dict
     if (val.isDict or val.isList) do
       return val.map() v => do
@@ -830,10 +978,10 @@ src:
   (a, b, by:null, opts:{}) => do
     // Input check
     if (a.isEmpty or b.isEmpty) return b
-
+  
     // Execute join
-    joinWithMethod("right", a, b, by, opts) 
-  end  
+    joinWithMethod("right", a, b, by, opts)
+  end
 ---
 name:semiJoin
 doc:
@@ -850,7 +998,7 @@ src:
     // Input check
     if (a.isEmpty) return a
     if (b.isEmpty) return [].toGrid
-
+  
     // Execute join
     joinWithMethod("semi", a, b, by, opts)
   end
@@ -862,7 +1010,7 @@ doc:
   
   For dicts, elements for removal are checked by name only. Values are ignored, including for
   keys mapped to 'Remove.val'.
-
+  
   Examples
   --------
   
@@ -876,86 +1024,15 @@ src:
     // Lists
     if(a.isList and b.isList) do
       return a.findAll(v => not(b.contains(v))).unique
-    
+  
     // Dicts
     else if(a.isDict and b.isDict) do
       return a.findAll() (v, n) => not(b.has(n))
-    
+  
     // Other
     else do
       throw "Invalid arguments; need two lists or two dicts."
     end
-  end
----
-name:stringToDict
-doc:
-  Converts a string of comma-separated values to a dict using `eval`. Automatically adds brackets
-  '{' '}' if needed.
-func
-src:
-  (s) => do
-    // Trim whitespace
-    s = s.trim
-    
-    // Handle brackets
-    if (not s.startsWith("{")) s = "{" + s
-    if (not s.endsWith("}")) s = s + "}"
-
-    // Eval
-    eval(s)
-  end
----
-name:stringToList
-doc:
-  Converts a string of comma-separated values to a list using `eval`. Automatically adds brackets
-  '[' ']' if needed.
-func
-src:
-  (s) => do
-    // Trim whitespace
-    s = s.trim
-    
-    // Handle brackets
-    if (not s.startsWith("[")) s = "[" + s
-    if (not s.endsWith("]")) s = s + "]"
-  
-    // Eval
-    eval(s)
-  end
----
-name:testJoin
-func
-nodoc
-func
-src:
-  // Test harnass for *Join functions
-  (expression) => do
-    // Test grids
-    a: [{name:"Bob",  age:63 , hometown:"Chicago", state:"IL"},
-        {name:"Jane", age:41 , hometown:"New York", state:"NY"},
-        {name:"Nico", age:25 , hometown:"Portland", state:"ME"}].toGrid
-
-    b: [{hometown:"New York", state:"NY", population:8175133},
-        {hometown:"Denver",   state:"CO", population:600158},
-        {hometown:"Portland", state:"OR", population:583776},
-        {hometown:"Portland", state:"ME", population:66093}].toGrid
-    
-    // Column order
-    a = a.reorderCols(["name","age","hometown","state"])
-    b = b.reorderCols(["hometown","state","population"])  
-    
-    // Simple test joins
-    if (expression == "left")  return leftJoin(a, b)
-    if (expression == "right") return rightJoin(a, b)
-    if (expression == "inner") return innerJoin(a, b)
-    if (expression == "outer") return outerJoin(a, b)
-    if (expression == "full")  return fullJoin(a, b)
-    if (expression == "semi")  return semiJoin(a, b)
-    if (expression == "anti")  return antiJoin(a, b)
-    
-    // More complex join; use form: (a, b) => *Join(a, b, ...)
-    f: expression.eval
-    f(a, b)
   end
 ---
 name:union
@@ -967,7 +1044,7 @@ doc:
     and throws an error on mismatch.
   - If 'checked' is *false*, values from 'a' override values from 'b'. This is similar to
     'merge(b, a)' except that keys not mapped to 'Remove.val' always take precedence.
-
+  
   Examples
   --------
   
@@ -983,7 +1060,7 @@ src:
     // Lists
     if(a.isList and b.isList) do
       return a.addAll(b).unique
-    
+  
     // Dicts
     else if(a.isDict and b.isDict) do
       // Value matching
@@ -992,10 +1069,10 @@ src:
           if (a.has(n) and a[n] != b[n]) throw "Values do not match for key \"" + n + "\"."
         end
       end
-      
+  
       // Merge, without dropping values
       return merge(merge(a, b), merge(b, a))
-    
+  
     // Other
     else do
       throw "Invalid arguments; need two lists or two dicts."

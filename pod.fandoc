@@ -205,7 +205,7 @@ Things get more interesting if we omit "state" from the join columns.
 Parsing Functions [#parsing]
 ****************************
 
-Functions to safely parse text into Haystack objects:
+Additional text parsing functions to complement the core 'parse*' functions:
 
 - `parseAuto`
 - `parseCoord`

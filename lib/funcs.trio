@@ -461,11 +461,6 @@ doc:"Returns *true* if 'val' is equal to NA, *false* otherwise."
 func
 src:"(val) => val == na()"
 ---
-name:isNull
-doc:"Returns *true* if 'val' is null, *false* otherwise."
-func
-src:"(val) => val == null"
----
 name:joinWithMethod
 doc:"Core implementation of '*Join()' functions."
 func

@@ -26,39 +26,35 @@ src:
 ---
 name:dictToFilter
 doc:
-  Transform the contents of a dict into a string compatible with `parseFilter`. The resulting
-  filter string matches records with tags that include all the name-value pairs in dict 'd'.
-
+  Transforms dict **d** into a string compatible with `parseFilter`. The resulting filter string matches records with tags that include all the name-value pairs in **d**.
+  
   Notes
   -----
   
-  1. All simple Axon data types are supported except dateTimes, which have no Axon literal.
+  1. Handles any axon data type supported by `toAxonCode`. However, data types without an Axon literal (e.g. dateTimes) may cause downstream functions such as `parseFilter` to fail.
   2. Dicts that contain reserved keywords as names, such as "return", will not throw an error but
      but may cause downstream functions such as `parseFilter` to fail.
-  3. Null values in 'd' will cause `parseFilter` to fail downstream; use the utility function
-     `removeNull` as needed to clean the input.
+  3. Null values in **d** are removed.
 func
 src:
   (d) => do
-    // Start filter string
-    s: ""
-  
-    // Create filter string
-    d.each() (v, n) => do
-      // Add logical operator
-      if (s.size > 0) s = s + " and "
-  
-      // Add name
-      s = s + n
-  
-      // Add value
-      if (v != marker()) do
-        s = s + "==" + v.toAxonCode
+    // Remove nulls
+    d = d.removeNull
+    
+    // Map dict vals to axon code for filter
+    d = d.map() (v, n) => do
+      // Name
+      if (v == marker()) do
+        return n
+        
+      // Name-Value
+      else do
+        return n + "==" + v.toAxonCode
       end
     end
-  
-    // Return filter string
-    s
+    
+    // Collect, concatenate, and return
+    d.vals.concat(" and ")
   end
 ---
 name:exportFunctions

@@ -8,7 +8,6 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 func
-overridable
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -122,7 +121,6 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 func
-overridable
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -406,7 +404,6 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 func
-overridable
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -705,7 +702,6 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 func
-overridable
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -718,7 +714,6 @@ src:
 name:outerJoin
 doc:"Alias for `fullJoin`."
 func
-overridable
 src:"(a, b, by:null, opts:{}) => fullJoin(a, b, by, opts)"
 ---
 name:parseAuto
@@ -993,7 +988,6 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 func
-overridable
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -1013,7 +1007,6 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 func
-overridable
 src:
   (a, b, by:null, opts:{}) => do
     // Input check

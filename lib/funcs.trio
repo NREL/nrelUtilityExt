@@ -890,6 +890,32 @@ src:
     end
   end
 ---
+name:product
+doc:"Fold multiple values into their numeric product. Return 'null' if no values."
+func
+overridable
+src:
+  (val, acc) => do 
+    // Start
+    if (val == foldStart()) do
+      return null
+  
+    // End
+    else if (val == foldEnd()) do
+      return acc
+    
+    // Skip null
+    else if (val == null) do
+      return acc
+  
+    // Accumulate
+    else if (acc == null) do
+      return val
+    else do
+      return val * acc
+    end
+  end
+---
 name:removeNA
 doc:
   Removes NA values from list or dict 'x'.

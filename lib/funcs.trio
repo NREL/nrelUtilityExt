@@ -8,6 +8,7 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 func
+overridable
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -21,6 +22,7 @@ name:arity
 doc:
   Given function **fun**, return the number of arguments the function accepts.
 func
+overridable
 src:
   (fun) => params(fun).size
 ---
@@ -36,6 +38,7 @@ doc:
      but may cause downstream functions such as `parseFilter` to fail.
   3. Null values in **d** are removed.
 func
+overridable
 src:
   (d) => do
     // Remove nulls
@@ -74,6 +77,7 @@ doc:
   
   If the 'sort' option is missing (e.g. by passing '-sort') or invalid, then the function records are not sorted prior to export. If 'sort' is present but is not a string or a function, then it is ignored (with a warning).
 func
+overridable
 src:
   (functions, handle, opts:{sort:"name"}) => do
     // Default options
@@ -118,6 +122,7 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 func
+overridable
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -135,6 +140,7 @@ doc:
   - For dicts, search by key names
   - For grids, search by column names
 func
+overridable
 src:
   (x, names) => do
     // Ensure names is a list
@@ -162,6 +168,7 @@ doc:
   - For dicts, search by key names
   - For grids, search by column names
 func
+overridable
 src:
   (x, names) => do
     // Ensure names is a list
@@ -233,6 +240,7 @@ doc:
   
   Enabling 'preview' overrides 'commit' and 'warn' to 'false'. Note that if 'preview' is 'false' and 'commit' is 'false', the function records themselves are returned (not the summary grid described above).
 func
+overridable
 src:
   (source, opts:{}) => do
     // Default options
@@ -385,6 +393,7 @@ src:
 name:in
 doc:"Convenience for 'b.contains(a)'; see `contains`."
 func
+overridable
 src:"(a, b) => b.contains(a)"
 ---
 name:innerJoin
@@ -397,6 +406,7 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 func
+overridable
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -424,6 +434,7 @@ doc:
     intersect({a, b:1}, {a, b:2})         >> error
     intersect({a, b:1}, {a, b:2}, false)  >> {a}
 func
+overridable
 src:
   (a, b, checked:true) => do
     // Lists
@@ -459,6 +470,7 @@ src:
 name:isNA
 doc:"Returns *true* if 'val' is equal to NA, *false* otherwise."
 func
+overridable
 src:"(val) => val == na()"
 ---
 name:joinWithMethod
@@ -693,6 +705,7 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 func
+overridable
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -705,6 +718,7 @@ src:
 name:outerJoin
 doc:"Alias for `fullJoin`."
 func
+overridable
 src:"(a, b, by:null, opts:{}) => fullJoin(a, b, by, opts)"
 ---
 name:parseAuto
@@ -723,6 +737,7 @@ doc:
   
   If parsing fails and **checked** is 'false' returns null; otherwise throws an error.
 func
+overridable
 src:
   (val, checked:true) => do
     // Try block
@@ -768,6 +783,7 @@ doc:
     parseCoord("-42,105")                >> C(-42, 105)
     parseCoord("coord(40.689, -74.044)") >> C(40.689, -74.044)
 func
+overridable
 src:
   (val, checked:true) => do
     // Try block
@@ -802,6 +818,7 @@ doc:
   
   If parsing fails and **checked** is 'false' returns null; otherwise throws an error.
 func
+overridable
 src:
   (val, checked:true) => do
     // Try block
@@ -845,6 +862,7 @@ doc:
   
   If parsing fails and **checked** is 'false' returns null; otherwise throws an error.
 func
+overridable
 src:
   (val, checked:true) => do
     // Try block
@@ -883,6 +901,7 @@ doc:
   
   Side effects: may rearrange dict key order.
 func
+overridable
 src:"(x) => x.findAll() v => v != na()"
 ---
 name:removeNaN
@@ -891,6 +910,7 @@ doc:
   
   Side effects: may rearrange dict key order.
 func
+overridable
 src:"(x) => x.findAll() v => not v.isNaN"
 ---
 name:removeNull
@@ -899,6 +919,7 @@ doc:
   
   Side effects: may rearrange dict key order.
 func
+overridable
 src:"(x) => x.findAll() v => v != null"
 ---
 name:removeVal
@@ -907,6 +928,7 @@ doc:
   
   Side effects: may rearrange dict key order.
 func
+overridable
 src:"(x, val) => x.findAll() v => v != val"
 ---
 name:rep
@@ -919,6 +941,7 @@ doc:
     rep(1, 2)               >> [1,1]
     rep("A", 3).concat("")  >> "AAA"
 func
+overridable
 src:
   (x, times) => do
     out: []
@@ -937,6 +960,7 @@ doc:
   For dicts and lists, the string replacement is not recursive. (For instance, the replacement will
   not reach inside of dicts nested within lists.)
 func
+overridable
 src:
   (val, from, to) => do
     // Convenience URI replacement function
@@ -969,6 +993,7 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 func
+overridable
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -988,6 +1013,7 @@ doc:
   more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 func
+overridable
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
@@ -1014,6 +1040,7 @@ doc:
     setDiff({a, b:1}, {b:2})      >> {a}
     setDiff({a, b:1}, {-b})       >> {a}
 func
+overridable
 src:
   (a, b) => do
     // Lists
@@ -1050,6 +1077,7 @@ doc:
     union({a, b:1}, {a, b:2})         >> error
     union({a, b:1}, {a, b:2}, false)  >> {a, b:1}
 func
+overridable
 src:
   (a, b, checked:true) => do
     // Lists

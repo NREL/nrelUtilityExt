@@ -72,7 +72,7 @@ doc:
   - 'preview': Boolean; if 'true' previews the export (see below)
   - 'sort': Tag name or function for sorting **functions** prior to export; see `sort` (default = "name")
   
-  If 'preview == true', returns the list of records that would have been written to **handle**. The 'preview' option may be also be passed as a marker, with 'preview' equivalent to 'preview:true' and '-preview' equivalent to 'preview:false'.
+  If 'preview == true', returns the list of records that would have been written to **handle**. The 'preview' option may be also be passed as a marker, with 'preview' equivalent to 'preview:true' and '-preview' equivalent to 'preview:false', or by setting **handle** equal to 'null'.
   
   If the 'sort' option is missing (e.g. by passing '-sort') or invalid, then the function records are not sorted prior to export. If 'sort' is present but is not a string or a function, then it is ignored (with a warning).
 func
@@ -83,7 +83,7 @@ src:
     opts = {sort:"name"}.merge(opts)
   
     // T/F options
-    opts = opts.set("preview", opts.has("preview")  and opts["preview"] != false)
+    opts = opts.set("preview", handle == null or (opts.has("preview") and opts["preview"] != false))
   
     // Check sort option
     if (opts.has("sort") and not opts->sort.isFunc and not opts->sort.isStr) do
@@ -92,18 +92,18 @@ src:
     end
   
     // Parse handle
-    if (not(handle.isUri)) handle = handle.parseUri
-    
+    if (not(handle.isUri) and handle != null) handle = handle.parseUri
+  
     // Coerce to grid
     functions = functions.toGrid
-    
+  
     // Optional merge and sort
     if (opts.has("merge")) functions = functions.map(f => f.merge(opts->merge))
     if (opts.has("sort"))  functions = functions.sort(opts->sort)
-    
+  
     // Remove 'id' and 'mod'
     functions = functions.map(f => f.remove("id").remove("mod"))
-    
+  
     // Preview mode
     if (opts->preview) return functions
   

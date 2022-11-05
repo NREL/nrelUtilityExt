@@ -111,6 +111,64 @@ src:
     functions.ioWriteTrio(handle)
   end
 ---
+name:fiscalYear
+doc:
+  Given a numeric year or date **val**, return a `haystack::DateSpan` representing the fiscal year associated with that year/date, optionally with an **offset** in whole years.
+  
+  Fiscal years are numbered by the calendar year in which they end. Fiscal years begin on the 1st of the month returned by `fiscalYearStart` (October by default). If your project requires a different fiscal year start, override `fiscalYearStart` locally.
+  
+    fiscalYear(2020)        >> DateSpan("2019-10-01,2020-09-30")
+    fiscalYear(2019-02-17)  >> DateSpan("2018-10-01,2019-09-30")
+    fiscalYear(today(), -1) >> Yields prior fiscal year
+func
+overridable
+src:
+  (val, offset:0) => do
+    // Fiscal year start and end months
+    fyStartMonth: fiscalYearStart()
+    fyEndMonth: if (fyStartMonth > 1) fyStartMonth - 1 else 12
+    
+    // Get year of interest
+    if (val.isNumber) do
+      // Whole year
+      yr: floor(val)
+  
+    else if (val.isDate or val.isDateTime) do
+      // Compute nominal fiscal year associated with date
+      yr: year(val) + max(0, month(val) <=> fyEndMonth)
+  
+    else do
+      // Unsupported input
+      throw "'val' must be a date, dateTime, or number."
+    end
+    
+    // Check offset
+    if (remainder(offset, 1) != 0) throw "'offset' must be a whole integer"
+  
+    // Offset
+    yr = yr + offset
+  
+    // Calculate span and return
+    if (fyStartMonth != 1) do
+      fyStart: date(yr-1, fyStartMonth, 1)
+      fyEnd: date(yr, fyEndMonth, numDaysInMonth(date(yr, fyEndMonth, 1)))
+      return fyStart..fyEnd
+    else do
+      // For January start, fiscal year equals calendar year
+      return toDateSpan(yr)
+    end
+  end
+  
+---
+name:fiscalYearStart
+doc:
+  Returns the first month of the fiscal year as an integer: 10 (October), corresponding to the U.S. Federal fiscal year start date of October 1.
+  
+  The value returned by this function defines the fiscal year start date for `fiscalYear` and related functions. If your project requires a different fiscal year, override this function locally.
+func
+overridable
+src:"() => 10"
+---
 name:fullJoin
 doc:
   Returns all rows and columns from both 'a' and 'b'. Rows in 'a' with no match in 'b' will have
@@ -691,6 +749,12 @@ src:
     return out.unique(colOrder).reorderCols(colOrder)
   end
 ---
+name:lastFiscalYear
+doc:"Convenience for 'fiscalYear(today(),-1)'; see `fiscalYear`."
+func
+overridable
+src:"() => fiscalYear(today(),-1)"
+---
 name:leftJoin
 doc:
   Returns all rows from 'a' and all columns from 'a' and 'b'. Rows in 'a' with no match in 'b' will
@@ -1074,6 +1138,155 @@ src:
     else do
       throw "Invalid arguments; need two lists or two dicts."
     end
+  end
+---
+name:thisFiscalYear
+doc:"Convenience for 'fiscalYear(today(),0)'; see `fiscalYear`."
+func
+overridable
+src:"() => fiscalYear(today(),0)"
+---
+name:toDayList
+doc:"Return a list of type `haystack::DateSpan` representing the set of whole days for date/time range **span**. If **clip** is 'true', the first and last days are converted to `haystack::Span` and clipped to the beginning and end of **span**, respectively."
+func
+overridable
+src:
+  (span, clip:false) => do
+    // Coerce to span
+    span = span.toSpan
+  
+    // Generate consecutive days
+    days: []
+    span.eachDay() d => days = days.add(d.toSpan)
+  
+    // Clip?
+    if (clip) do
+      // Clip start
+      days = days.remove(0).insert(0, (span.start)..(days[0].end))
+  
+      // Clip end
+      days = days.remove(-1).add((days[-1].start)..(span.end))
+    end
+  
+    // Return
+    days
+  end
+---
+name:toFiscalYearList
+doc:"Return a list of type `haystack::DateSpan` representing the set of whole fiscal years for date/time range **span**. If **clip** is 'true', the first and last fiscal years are converted to `haystack::Span` and clipped to the beginning and end of **span**, respectively. See also `fiscalYear`."
+func
+overridable
+src:
+  (span, clip:false) => do
+    // Coerce to span
+    span = span.toSpan
+  
+    // Starting and ending fiscal years
+    startYear: fiscalYear(span.start).end.year
+    endYear:   fiscalYear(span.end).end.year
+  
+    // Generate consecutive fiscal years
+    years: (startYear..endYear)
+      .map(y => fiscalYear(y).toSpan)
+      .findAll(v => v.start < span.end)
+  
+    // Clip?
+    if (clip) do
+      // Clip start
+      years = years.remove(0).insert(0, (span.start)..(years[0].end))
+  
+      // Clip end
+      years = years.remove(-1).add((years[-1].start)..(span.end))
+    end
+  
+    // Return
+    years
+  end
+---
+name:toMonthList
+doc:"Return a list of type `haystack::DateSpan` representing the set of whole months for date/time range **span**. If **clip** is 'true', the first and last months are converted to `haystack::Span` and clipped to the beginning and end of **span**, respectively."
+func
+overridable
+src:
+  (span, clip:false) => do
+    // Coerce to span
+    span = span.toSpan
+  
+    // Generate consecutive months
+    months: []
+    span.eachMonth() m => months = months.add(m.toSpan)
+  
+    // Clip?
+    if (clip) do
+      // Clip start
+      months = months.remove(0).insert(0, (span.start)..(months[0].end))
+  
+      // Clip end
+      months = months.remove(-1).add((months[-1].start)..(span.end))
+    end
+  
+    // Return
+    months
+  end
+---
+name:toWeekList
+doc:"Return a list of type `haystack::DateSpan` representing the set of whole weeks for date/time range **span**. Weeks begin on the weekday returned by `startOfWeek`. If **clip** is 'true', the first and last weeks are converted to `haystack::Span` and clipped to the beginning and end of **span**, respectively."
+func
+overridable
+src:
+  (span, clip:false) => do
+    // Coerce to span
+    span = span.toSpan
+  
+    // Adjustment to start of the week
+    adjust: weekday(span.start) - startOfWeek()
+    if (adjust < 0) adjust = adjust + 7
+    startDate: span.start.date - adjust
+  
+    // Generate consecutive weeks
+    weeks: hisSlidingWindows(startDate..(span.end), 0day, 7day)
+      .hisFindAll((val, ts) => ts < span.end)
+      .toRecList
+      .map(row => (row->ts)..(row->ts + 7day))
+  
+    // Clip?
+    if (clip) do
+      // Clip start
+      weeks = weeks.remove(0).insert(0, (span.start)..(weeks[0].end))
+  
+      // Clip end
+      weeks = weeks.remove(-1).add((weeks[-1].start)..(span.end))
+    end
+  
+    // Return
+    weeks
+  end
+---
+name:toYearList
+doc:"Return a list of type `haystack::DateSpan` representing the set of whole years for date/time range **span**. Years begin on January 1. If **clip** is 'true', the first and last years are converted to `haystack::Span` and clipped to the beginning and end of **span**, respectively."
+func
+overridable
+src:
+  (span, clip:false) => do
+    // Coerce to span
+    span = span.toSpan
+  
+    // Generate consecutive years
+    years: ((span.start.year)..(span.end.year))
+      .map(y => toSpan(date(y, 1, 1)..date(y, 12, 31)))
+      .findAll(v => v.start < span.end)
+  
+    // Clip?
+    if (clip) do
+      // Clip start
+      years = years.remove(0).insert(0, (span.start)..(years[0].end))
+  
+      // Clip end
+      years = years.remove(-1).add((years[-1].start)..(span.end))
+    end
+  
+    // Return
+    years
   end
 ---
 name:union

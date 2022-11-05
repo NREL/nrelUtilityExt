@@ -2,7 +2,7 @@ Overview [#over]
 ****************
 
 The NREL Utility extension provides a variety of missing utility functions for the Axon
-programming language.
+programming language. Many functions are `overridable`.
 
 Set Operations [#setops]
 ************************
@@ -214,12 +214,24 @@ Additional text parsing functions to complement the core 'parse*' functions:
 
 These now use regex and/or wrap `ioReadZinc`, so they should be safe to use on arbitrary input text.
 
+Function Import and Export [#importexport]
+******************************************
+
+Functions to facilitate moving functions among projects:
+
+- `importFunctions` imports functions from a uri, record list, or text into the current project
+- `exportFunctions` exports functions from the current project to file
+
+Options are available to filter, sort, and add or remove tags to imported and exported functions.
+
 Other Useful Stuff [#otherstuff]
 ********************************
 
 A brief sampling of other useful functions:
 
-- `importFunctions` and `exportFunctions` facilitate moving functions among projects
+- `fiscalYear`, `thisFiscalYear`, and `lastFiscalYear` return date ranges corresponding to fiscal years
+- `toDayList`, `toWeekList`, `toMonthList`, `toYearList`, and `toFiscalYearList` return lists of whole
+  days, weeks, months, years, or fiscal years covering a given time span
 - `hasAny` and `hasAll` are extensions of `has` to multiple keys
 - `isNA` complements `isNull`, `isNaN`, and the various other core 'is*' funtions
 - `removeNA`, `removeNaN`, `removeNull`, and `removeVal` remove NAs, NaNs, nulls, or specific values

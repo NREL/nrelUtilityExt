@@ -2,7 +2,7 @@ Overview [#over]
 ****************
 
 The NREL Utility extension provides a variety of missing utility functions for the Axon
-programming language. Many functions are `overridable`.
+programming language. Most functions are `overridable`.
 
 Set Operations [#setops]
 ************************

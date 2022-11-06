@@ -819,7 +819,7 @@ src:
   end
 ---
 name:lastFiscalYear
-doc:"Convenience for 'fiscalYear(today(),-1)'; see `fiscalYear`."
+doc:"Returns a `haystack::DateSpan` for the prior fiscal year. See `fiscalYear`."
 func
 overridable
 src:"() => fiscalYear(today(),-1)"
@@ -1279,7 +1279,7 @@ src:
   end
 ---
 name:thisFiscalYear
-doc:"Convenience for 'fiscalYear(today(),0)'; see `fiscalYear`."
+doc:"Returns a `haystack::DateSpan` for the current fiscal year. See `fiscalYear`."
 func
 overridable
 src:"() => fiscalYear(today(),0)"

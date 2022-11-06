@@ -1,3 +1,29 @@
+name:andAll
+doc:"Fold function to apply logical AND to a set of Boolean values. Return 'null' if no values."
+func
+overridable
+src:
+  (val, acc) => do 
+    // Start
+    if (val == foldStart()) do
+      return null
+  
+    // End
+    else if (val == foldEnd()) do
+      return acc
+  
+    // Skip null
+    else if (val == null) do
+      return acc
+  
+    // Accumulate: apply rolling logical AND
+    else if (acc == null) do
+      return val
+    else do
+      return (val and acc)
+    end
+  end
+---
 name:antiJoin
 doc:
   Returns all rows from 'a' where there are *not* matching values in 'b', keeping columns from 'a'
@@ -773,6 +799,32 @@ src:
   
     // Execute join
     joinWithMethod("left", a, b, by, opts)
+  end
+---
+name:orAll
+doc:"Fold function to apply logical OR to a set of Boolean values. Return 'null' if no values."
+func
+overridable
+src:
+  (val, acc) => do 
+    // Start
+    if (val == foldStart()) do
+      return null
+  
+    // End
+    else if (val == foldEnd()) do
+      return acc
+  
+    // Skip null
+    else if (val == null) do
+      return acc
+  
+    // Accumulate: apply rolling logical OR
+    else if (acc == null) do
+      return val
+    else do
+      return (val or acc)
+    end
   end
 ---
 name:outerJoin

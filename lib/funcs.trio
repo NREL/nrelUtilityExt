@@ -141,7 +141,10 @@ src:
   
     // Check sort option
     if (opts.has("sort") and not opts->sort.isFunc and not opts->sort.isStr) do
-      logWarn("exportFuncs", "'sort' option is not a string or function; ignoring.")
+      logWarn(
+        {name:"nrelUtility", funcTrace:"exportFunctions"},
+        "'sort' option is not a string or function; ignoring."
+      )
       opts = opts.remove("sort")
     end
   
@@ -460,16 +463,28 @@ src:
     
     // Log warning for functions with no name
     if (noName > 1 and opts->warn) do
-      logWarn("importFuncs", noName + " functions without a 'name' tag were dropped.")
+      logWarn(
+        {name:"nrelUtility", funcTrace:"importFuncs"},
+        noName + " functions without a 'name' tag were dropped."
+      )
     else if (noName == 1 and opts->warn) do    
-      logWarn("importFuncs", noName + " function without a 'name' tag was dropped.")
+      logWarn(
+        {name:"nrelUtility", funcTrace:"importFuncs"},
+        noName + " function without a 'name' tag was dropped."
+      )
     end
   
     // Log warning for functions with no source
     if (noSrc > 1 and opts->warn) do
-      logWarn("importFuncs", noSrc + " functions without a 'src' tag were dropped.")
+      logWarn(
+        {name:"nrelUtility", funcTrace:"importFuncs"},
+        noSrc + " functions without a 'src' tag were dropped."
+      )
     else if (noName == 1 and opts->warn) do    
-      logWarn("importFuncs", noSrc + " function without a 'src' tag was dropped.")
+      logWarn(
+        {name:"nrelUtility", funcTrace:"importFuncs"},
+        noSrc + " function without a 'src' tag was dropped."
+      )
     end
   
     // Preview mode

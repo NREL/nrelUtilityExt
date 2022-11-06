@@ -26,13 +26,9 @@ src:
 ---
 name:antiJoin
 doc:
-  Returns all rows from 'a' where there are *not* matching values in 'b', keeping columns from 'a'
-  only.
+  Returns all rows from grid 'a' where there are *not* matching values in grid 'b', keeping columns from 'a' only.
   
-  'antiJoin' is one of six SQL-style joins modeled on the two-table verbs in the
-  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
-  more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-nrelUtility::doc#joins`.
+  'antiJoin' is one of six SQL-style joins modeled on the two-table verbs in the [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the [join documentation]`ext-nrelUtility::doc#joins`.
 func
 src:
   (a, b, by:null, opts:{}) => do
@@ -45,7 +41,7 @@ src:
 ---
 name:arity
 doc:
-  Given function **fun**, return the number of arguments the function accepts.
+  Return the number of arguments function 'fun' accepts.
 func
 overridable
 src:
@@ -53,11 +49,11 @@ src:
 ---
 name:cvrmse
 doc:
-  Calculate the coefficient of variation of the root-mean-square error (CV[RMSE]) for vector **yhat** with respect to measurement vector **y**, following the CV(RMSE) formula given in ASHRAE Guideline 14.
+  Calculate the coefficient of variation of the root-mean-square error (CV[RMSE]) for vector 'yhat' with respect to measurement vector 'y', following the CV(RMSE) formula given in ASHRAE Guideline 14.
   
-  - **y**: vector (numeric list) of measured data
-  - **yhat**: vector (numeric list) of modeled or predicted data
-  - **p**: number of parameters in the model (default = 1)
+  - 'y': vector (numeric list) of measured data
+  - 'yhat': vector (numeric list) of modeled or predicted data
+  - 'p': number of parameters in the model (default = 1)
 func
 overridable
 src:
@@ -81,15 +77,14 @@ src:
 ---
 name:dictToFilter
 doc:
-  Transforms dict **d** into a string compatible with `parseFilter`. The resulting filter string matches records with tags that include all the name-value pairs in **d**.
+  Transforms dict 'd' into a string compatible with `parseFilter`. The resulting filter string matches records with tags that include all the name-value pairs in 'd'.
   
   Notes
   -----
   
   1. Handles any axon data type supported by `toAxonCode`. However, data types without an Axon literal (e.g. dateTimes) may cause downstream functions such as `parseFilter` to fail.
-  2. Dicts that contain reserved keywords as names, such as "return", will not throw an error but
-     but may cause downstream functions such as `parseFilter` to fail.
-  3. Null values in **d** are removed.
+  2. Dicts that contain reserved keywords as names, such as "return", will not throw an error but may cause downstream functions such as `parseFilter` to fail.
+  3. Null values in 'd' are removed.
 func
 overridable
 src:
@@ -115,24 +110,24 @@ src:
 ---
 name:exportFunctions
 doc:
-  Exports one or more **functions** to a tagged record input/output (TRIO) file at the specified **handle**. See also `importFunctions`.
+  Exports one or more 'functions' to a `docHaystack::Trio` file at the specified 'handle'. See also `importFunctions`.
   
   Options
   -------
   
-  Export behavior can be modified by control options passed by **opts**:
+  Export behavior can be modified by control options passed via 'opts':
   
   - 'merge': Dict to merge onto functions prior to export
   - 'preview': Boolean; if 'true' previews the export (see below)
-  - 'sort': Tag name or function for sorting **functions** prior to export; see `sort` (default = "name")
+  - 'sort': Tag name or function for sorting 'functions' prior to export; see `sort` (default = "name")
   
-  If 'preview == true', returns the list of records that would have been written to **handle**. The 'preview' option may be also be passed as a marker, with 'preview' equivalent to 'preview:true' and '-preview' equivalent to 'preview:false', or by setting **handle** equal to 'null'.
+  If 'preview == true', returns the list of records that would have been written to 'handle'. The 'preview' option may be also be passed as a marker, with 'preview' equivalent to 'preview:true' and '-preview' equivalent to 'preview:false', or by passing 'handle = null'.
   
   If the 'sort' option is missing (e.g. by passing '-sort') or invalid, then the function records are not sorted prior to export. If 'sort' is present but is not a string or a function, then it is ignored (with a warning).
 func
 overridable
 src:
-  (functions, handle, opts:{sort:"name"}) => do
+  (functions, handle:null, opts:{sort:"name"}) => do
     // Default options
     opts = {sort:"name"}.merge(opts)
   
@@ -170,7 +165,7 @@ src:
 ---
 name:fiscalYear
 doc:
-  Given a numeric year or date **val**, return a `haystack::DateSpan` representing the fiscal year associated with that year/date, optionally with an **offset** in whole years.
+  Given a numeric year or date 'val', return a `haystack::DateSpan` representing the fiscal year associated with that year/date, optionally with an 'offset' in whole years.
   
   Fiscal years are numbered by the calendar year in which they end. Fiscal years begin on the 1st of the month returned by `fiscalYearStart` (October by default). If your project requires a different fiscal year start, override `fiscalYearStart` locally.
   
@@ -219,22 +214,18 @@ src:
 ---
 name:fiscalYearStart
 doc:
-  Returns the first month of the fiscal year as an integer: 10 (October), corresponding to the U.S. Federal fiscal year start date of October 1.
+  Returns the first month of the fiscal year as an integer.
   
-  The value returned by this function defines the fiscal year start date for `fiscalYear` and related functions. If your project requires a different fiscal year, override this function locally.
+  The value returned by this function defines the fiscal year start date for `fiscalYear` and related functions. The default is 10 (October), corresponding to the U.S. Federal fiscal year start date of October 1. If your project requires a different fiscal year, override this function locally.
 func
 overridable
 src:"() => 10"
 ---
 name:fullJoin
 doc:
-  Returns all rows and columns from both 'a' and 'b'. Rows in 'a' with no match in 'b' will have
-  missing entries in the columns joined from 'b', and vice versa.
+  Returns all rows and columns from grids 'a' and 'b'. Rows in 'a' with no match in 'b' will have missing entries in the columns joined from 'b', and vice versa.
   
-  'fullJoin' is one of six SQL-style joins modeled on the two-table verbs in the
-  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
-  more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-nrelUtility::doc#joins`.
+  'fullJoin' is one of six SQL-style joins modeled on the two-table verbs in the [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the [join documentation]`ext-nrelUtility::doc#joins`.
 func
 src:
   (a, b, by:null, opts:{}) => do
@@ -248,7 +239,7 @@ src:
 ---
 name:hasAll
 doc:
-  Returns *true* if 'x' has all the elements in 'names'.
+  Returns 'true' if 'x' has all the elements in 'names'.
   
   - For dicts, search by key names
   - For grids, search by column names
@@ -276,7 +267,7 @@ src:
 ---
 name:hasAny
 doc:
-  Returns *true* if 'x' has any of the elements in 'names'.
+  Returns 'true' if 'x' has any of the elements in 'names'.
   
   - For dicts, search by key names
   - For grids, search by column names
@@ -304,10 +295,10 @@ src:
 ---
 name:importFunctions
 doc:
-  Imports functions from **source**, and optionally commits them to the Folio. Supported data types for **source** are:
+  Imports function records from 'source', and optionally commits them to the Folio. Supported data types for 'source' are:
   
-  - Str: Parsed as [TRIO]`docHaystack::Trio` using `ioReadTrio`
-  - Uri: Parsed as TRIO using `ioReadTrio`
+  - `sys::Str`: Parsed as `docHaystack::Trio` using `ioReadTrio`
+  - `sys::Uri`: Parsed as `docHaystack::Trio` using `ioReadTrio`
   - Anything supported by `toRecList`: The 'func' records to be imported as a list of Dicts
   
   Other actions taken on import:
@@ -319,11 +310,11 @@ doc:
   Options
   -------
   
-  Import behavior can be modified by control options passed by **opts**:
+  Import behavior can be modified by control options passed by 'opts':
   
   - 'commit': Boolean; if 'true' commits the imported functions to the database (default = 'false')
   - 'conflict': Action on conflicts; one of "skip", "overwrite", or "rename" (default = "skip")
-  - 'filter': Str compatible with `parseFilter`; filters (subsets) the imported function records
+  - 'filter': `sys::Str` compatible with `parseFilter`; filters (subsets) the imported function records
   - 'merge': Dict to merge onto imported functions
   - 'preview': Boolean; if 'true' previews the import (see below)
   - 'warn': Boolean; if 'true' log warnings (default = 'true')
@@ -349,7 +340,7 @@ doc:
   - 'name': Name of the function
   - 'rec': Nested dict with full function record
   - 'exists': Marker; whether the function already exists
-  - 'action': Str; action that will be taken
+  - 'action': `sys::Str`; action that will be taken
   
   Enabling 'preview' overrides 'commit' and 'warn' to 'false'. Note that if 'preview' is 'false' and 'commit' is 'false', the function records themselves are returned (not the summary grid described above).
 func
@@ -523,12 +514,9 @@ src:"(a, b) => b.contains(a)"
 ---
 name:innerJoin
 doc:
-  Returns all rows from 'a' where there are matching values in 'b' and all columns from 'a' and 'b'.
-  If there are multiple matches between 'a' and 'b', all combinations of the matches are returned.
+  Returns all rows from grid 'a' where there are matching values in grid 'b' combining all columns from 'a' and 'b'. If there are multiple matches between 'a' and 'b', all combinations of the matches are returned.
   
-  'innerJoin' is one of six SQL-style joins modeled on the two-table verbs in the
-  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
-  more information, including syntax for 'by' and valid options for 'opts', see the
+  'innerJoin' is one of six SQL-style joins modeled on the two-table verbs in the   [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
 func
 src:
@@ -545,12 +533,11 @@ doc:
   Returns the set intersection of two lists or dicts 'a' and 'b'. Behavior for dicts differs by
   'checked':
   
-  - If 'checked' is *true*, verifies that keys included in both 'a' and 'b' have matching values,
+  - If 'checked == true', verifies that keys included in both 'a' and 'b' have matching values,
     and throws an error on mismatch.
-  - If 'checked' is *false*, excludes name-value pairs with matching keys but differing values.
+  - If 'checked == false', excludes name-value pairs with matching keys but differing values.
   
-  Examples
-  --------
+  Examples:
   
     intersect([1, 2, 3],[2, 3, 4])        >> [2, 3]
     intersect({a, b}, {a, c})             >> {a}
@@ -592,15 +579,14 @@ src:
   end
 ---
 name:isNA
-doc:"Returns *true* if 'val' is equal to NA, *false* otherwise."
+doc:"Returns 'true' if 'val' equals `haystack::NA`, 'false' otherwise."
 func
 overridable
 src:"(val) => val == na()"
 ---
 name:joinWithMethod
-doc:"Core implementation of '*Join()' functions."
+doc:"Core implementation of '*Join()' functions. Not intended to be used directly."
 func
-nodoc
 src:
   (method, a, b, by, opts) => do
   
@@ -826,14 +812,9 @@ src:"() => fiscalYear(today(),-1)"
 ---
 name:leftJoin
 doc:
-  Returns all rows from 'a' and all columns from 'a' and 'b'. Rows in 'a' with no match in 'b' will
-  have missing entries in the columns joined from 'b'. If there are multiple matches between 'a' and
-  'b', all combinations of the matches are returned.
+  Returns all rows from grid 'a' and all columns from grids 'a' and 'b'. Rows in 'a' with no match in 'b' will have missing entries in the columns joined from 'b'. If there are multiple matches between 'a' and 'b', all combinations of the matches are returned.
   
-  'leftJoin' is one of six SQL-style joins modeled on the two-table verbs in the
-  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
-  more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-nrelUtility::doc#joins`.
+  'leftJoin' is one of six SQL-style joins modeled on the two-table verbs in the [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the [join documentation]`ext-nrelUtility::doc#joins`.
 func
 src:
   (a, b, by:null, opts:{}) => do
@@ -846,11 +827,11 @@ src:
 ---
 name:nmbe
 doc:
-  Calculate the normalized mean bias error (NMBE) for vector **yhat** with respect to measurement vector **y**, following the NMBE formula given in ASHRAE Guideline 14.
+  Calculate the normalized mean bias error (NMBE) for vector 'yhat' with respect to measurement vector 'y', following the NMBE formula given in ASHRAE Guideline 14.
   
-  - **y**: vector (numeric list) of measured data
-  - **yhat**: vector (numeric list) of modeled or predicted data
-  - **p**: number of parameters in the model (default = 1)
+  - 'y': vector (numeric list) of measured data
+  - 'yhat': vector (numeric list) of modeled or predicted data
+  - 'p': number of parameters in the model (default = 1)
 func
 overridable
 src:
@@ -905,7 +886,7 @@ src:"(a, b, by:null, opts:{}) => fullJoin(a, b, by, opts)"
 ---
 name:parseAuto
 doc:
-  Parse a Str **val**, automatically guessing its data type. Supports all [Zinc]`docHaystack::Zinc` data types plus the following keywords:
+  Parse a `sys::Str` 'val', automatically guessing its data type. Supports all `docHaystack::Zinc` data types plus the following keywords:
   
   - True: 'true', 'True', or 'TRUE' (as Bool)
   - False: 'false, 'False', or 'FALSE' (as Bool)
@@ -917,7 +898,7 @@ doc:
   
   For everything else, this function wraps `ioReadZinc`. The resulting parsing behavior supports most basic [Axon]`docHaxall::AxonLang` data types, but ranges, triple-quoted string literals, and raw string literals are not supported.
   
-  If parsing fails and **checked** is 'false' returns null; otherwise throws an error.
+  If parsing fails and 'checked' is 'false' returns null; otherwise throws an error.
 func
 overridable
 src:
@@ -952,7 +933,7 @@ src:
 ---
 name:parseCoord
 doc:
-  Parse a Coord **val**, which must consist of two number values separated by a comma. If parsing fails and checked = 'false' returns null; otherwise throws an error.
+  Parse a `sys::Str` 'val' as a `haystack::Coord`. 'val' must consist of two number values separated by a comma. If parsing fails and checked = 'false' returns null; otherwise throws an error.
   
   - Numbers must be within the valid range per `coord`
   - Numbers cannot have a unit
@@ -991,14 +972,14 @@ src:
 ---
 name:parseDict
 doc:
-  Parse a Str **val** as a dict, which must be encoded as a valid [Zinc]`docHaystack::Zinc` dictionary. Because this function wraps `ioReadZinc`, it requires Zinc-style syntax rather than [Axon]`docHaxall::AxonLang` syntax for the following data types:
+  Parse a `sys::Str` 'val' as a `haystack::Dict`. 'val' must be encoded as a valid `docHaystack::Zinc` dictionary. Because this function wraps `ioReadZinc`, it requires Zinc-style syntax rather than [Axon]`docHaxall::AxonLang` syntax for the following data types:
   
   - Null: 'N' instead of 'null'
   - Boolean: 'T/F' instead of 'true/false'
   
   Also, ranges, triple-quoted string literals, and raw string literals are not supported.
   
-  If parsing fails and **checked** is 'false' returns null; otherwise throws an error.
+  If parsing fails and 'checked' is 'false' returns null; otherwise throws an error.
 func
 overridable
 src:
@@ -1035,14 +1016,14 @@ src:
 ---
 name:parseList
 doc:
-  Parse a Str **val** as a list, which must be encoded as a valid [Zinc]`docHaystack::Zinc` list. Because this function wraps `ioReadZinc`, it requires Zinc-style syntax rather than [Axon]`docHaxall::AxonLang` syntax for the following data types:
+  Parse a `sys::Str` 'val' as a `sys::List`. 'val' must be encoded as a valid `docHaystack::Zinc` list. Because this function wraps `ioReadZinc`, it requires Zinc-style syntax rather than [Axon]`docHaxall::AxonLang` syntax for the following data types:
   
   - Null: 'N' instead of 'null'
   - Boolean: 'T/F' instead of 'true/false'
   
   Also, ranges, triple-quoted string literals, and raw string literals are not supported.
   
-  If parsing fails and **checked** is 'false' returns null; otherwise throws an error.
+  If parsing fails and 'checked' is 'false' returns null; otherwise throws an error.
 func
 overridable
 src:
@@ -1080,7 +1061,7 @@ src:
 name:parseRef2
 func
 doc:
-  **Deprecated:** In SkySpark 3.1.2+, `parseRef` already strips leading "@".
+  **Deprecated**; tn SkySpark 3.1.2+, `parseRef` already strips leading "@".
   
   Convenience wrapper for `parseRef` that supports leading "@" without throwing error.
 src:
@@ -1158,8 +1139,7 @@ name:rep
 doc:
   Replicate the value 'x' the specified number of 'times'. Returns a list.
   
-  Examples
-  --------
+  Examples:
   
     rep(1, 2)               >> [1,1]
     rep("A", 3).concat("")  >> "AAA"
@@ -1184,9 +1164,9 @@ doc:
   
   Examples:
   
-    "hello".replace("hell", "t")            >> "to"
-    `io/funcs.txt`.replace("txt", "trio")   >> `io/funcs.trio`
-    {a:["b","c"], d:`b`}.replace("b", "x")  >> {a:["x","c"], d:`x`}
+    "hello".replace2("hell", "t")            >> "to"
+    `io/funcs.txt`.replace2("txt", "trio")   >> `io/funcs.trio`
+    {a:["b","c"], d:`b`}.replace2("b", "x")  >> {a:["x","c"], d:`x`}
 func
 overridable
 src:
@@ -1208,14 +1188,9 @@ src:
 ---
 name:rightJoin
 doc:
-  Returns all rows from 'b' and all columns from 'a' and 'b'. Rows in 'b' with no match in 'a' will
-  have missing entries in the columns joined from 'a'. If there are multiple matches between 'a' and
-  'b', all combinations of the matches are returned.
+  Returns all rows from grid 'b' and all columns from grids 'a' and 'b'. Rows in 'b' with no match in 'a' will have missing entries in the columns joined from 'a'. If there are multiple matches between 'a' and 'b', all combinations of the matches are returned.
   
-  'rightJoin' is one of six SQL-style joins modeled on the two-table verbs in the
-  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
-  more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-nrelUtility::doc#joins`.
+  'rightJoin' is one of six SQL-style joins modeled on the two-table verbs in the [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the [join documentation]`ext-nrelUtility::doc#joins`.
 func
 src:
   (a, b, by:null, opts:{}) => do
@@ -1228,13 +1203,9 @@ src:
 ---
 name:semiJoin
 doc:
-  Returns all rows from 'a' where there are matching values in 'b', keeping columns from 'a' only.
-  Differs from `innerJoin` in that it will never duplicate rows of 'a'.
+  Returns all rows from grid 'a' where there are matching values in grid 'b', keeping columns from 'a' only. Differs from `innerJoin` in that it will never duplicate rows of 'a'.
   
-  'semiJoin' is one of six SQL-style joins modeled on the two-table verbs in the
-  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
-  more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-nrelUtility::doc#joins`.
+  'semiJoin' is one of six SQL-style joins modeled on the two-table verbs in the [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the [join documentation]`ext-nrelUtility::doc#joins`.
 func
 src:
   (a, b, by:null, opts:{}) => do
@@ -1254,8 +1225,7 @@ doc:
   For dicts, elements for removal are checked by name only. Values are ignored, including for
   keys mapped to 'Remove.val'.
   
-  Examples
-  --------
+  Examples:
   
     setDiff([1, 2, 3],[2, 3, 4])  >> [1]
     setDiff({a, b}, {a, c})       >> {b}
@@ -1286,7 +1256,7 @@ overridable
 src:"() => fiscalYear(today(),0)"
 ---
 name:toDayList
-doc:"Return a list of type `haystack::DateSpan` representing the set of whole days for date/time range **span**. If **clip** is 'true', the first and last days are converted to `haystack::Span` and clipped to the beginning and end of **span**, respectively."
+doc:"Return a list of type `haystack::DateSpan` representing the set of whole days for date/time range 'span'. If 'clip == true', the first and last days are converted to `haystack::Span` and clipped to the beginning and end of 'span', respectively."
 func
 overridable
 src:
@@ -1312,7 +1282,7 @@ src:
   end
 ---
 name:toFiscalYearList
-doc:"Return a list of type `haystack::DateSpan` representing the set of whole fiscal years for date/time range **span**. If **clip** is 'true', the first and last fiscal years are converted to `haystack::Span` and clipped to the beginning and end of **span**, respectively. See also `fiscalYear`."
+doc:"Return a list of type `haystack::DateSpan` representing the set of whole fiscal years for date/time range 'span'. If 'clip == true', the first and last fiscal years are converted to `haystack::Span` and clipped to the beginning and end of 'span', respectively. See also `fiscalYear`."
 func
 overridable
 src:
@@ -1343,7 +1313,7 @@ src:
   end
 ---
 name:toMonthList
-doc:"Return a list of type `haystack::DateSpan` representing the set of whole months for date/time range **span**. If **clip** is 'true', the first and last months are converted to `haystack::Span` and clipped to the beginning and end of **span**, respectively."
+doc:"Return a list of type `haystack::DateSpan` representing the set of whole months for date/time range 'span'. If 'clip == true', the first and last months are converted to `haystack::Span` and clipped to the beginning and end of 'span', respectively."
 func
 overridable
 src:
@@ -1369,7 +1339,7 @@ src:
   end
 ---
 name:toWeekList
-doc:"Return a list of type `haystack::DateSpan` representing the set of whole weeks for date/time range **span**. Weeks begin on the weekday returned by `startOfWeek`. If **clip** is 'true', the first and last weeks are converted to `haystack::Span` and clipped to the beginning and end of **span**, respectively."
+doc:"Return a list of type `haystack::DateSpan` representing the set of whole weeks for date/time range 'span'. Weeks begin on the weekday returned by `startOfWeek`. If 'clip == true', the first and last weeks are converted to `haystack::Span` and clipped to the beginning and end of 'span', respectively."
 func
 overridable
 src:
@@ -1402,7 +1372,7 @@ src:
   end
 ---
 name:toYearList
-doc:"Return a list of type `haystack::DateSpan` representing the set of whole years for date/time range **span**. Years begin on January 1. If **clip** is 'true', the first and last years are converted to `haystack::Span` and clipped to the beginning and end of **span**, respectively."
+doc:"Return a list of type `haystack::DateSpan` representing the set of whole years for date/time range 'span'. Years begin on January 1. If 'clip == true', the first and last years are converted to `haystack::Span` and clipped to the beginning and end of 'span', respectively."
 func
 overridable
 src:
@@ -1433,13 +1403,12 @@ doc:
   Returns the set union of two lists or dicts 'a' and 'b'. Behavior for dicts differs by
   'checked':
   
-  - If 'checked' is *true*, verifies that keys included in both 'a' and 'b' have matching values,
+  - If 'checked == true', verifies that keys included in both 'a' and 'b' have matching values,
     and throws an error on mismatch.
-  - If 'checked' is *false*, values from 'a' override values from 'b'. This is similar to
+  - If 'checked == false', values from 'a' override values from 'b'. This is similar to
     'merge(b, a)' except that keys not mapped to 'Remove.val' always take precedence.
   
-  Examples
-  --------
+  Examples:
   
     union([1, 2, 3],[2, 3, 4])        >> [1, 2, 3, 4]
     union({a, b}, {a, c})             >> {a, b, c}

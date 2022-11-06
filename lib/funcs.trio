@@ -1087,7 +1087,7 @@ src:
   (val, checked:true) => do
     logWarn(
       {name:"nrelUtility", funcTrace:"parseRef2"},
-      "parseRef2() is deprecated and will be removed a future release.")
+      "parseRef2() is deprecated and will be removed a future release."
     )
     if (val.startsWith("@")) parseRef(val[1..-1], checked) else parseRef(val, checked)
   end

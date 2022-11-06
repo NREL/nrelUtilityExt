@@ -15,7 +15,7 @@ class Build : BuildPod
   {
     podName = "nrelUtilityExt"
     summary = "Missing Axon utility functions"
-    version = Version("1.1.4")
+    version = Version("2.0.0")
     meta    = [
                 "ext.name":        "nrelUtility",
                 "ext.depends":     "io",

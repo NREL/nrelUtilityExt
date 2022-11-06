@@ -29,6 +29,7 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 - `importFunctions()`, `exportFunctions()`: extensively modified to add
   features and improve internal consistency; **not backwards-compatible with 1.x
   versions!**
+- `replace2()` is now recursive for lists and dicts
 - Most functions are now `overridable`
 - Include function trace (`funcTrace` tag) with all logged warnings
 

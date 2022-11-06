@@ -1174,34 +1174,35 @@ src:
 ---
 name:replace2
 doc:
-  Convenience wrapper for `replace` that also allows processing of URIs or dicts.
+  Convenience wrapper for `replace` that also accepts uris, lists, and dicts.
   
   - If 'val' is a string, identical to `replace`
-  - If 'val' is a URI, it is coerced to string, modified, and re-parsed as a URI
-  - If 'val' is a dict or list, all its string and URI elements have the replacement applied
+  - If 'val' is a uri, it is coerced to string, modified, and re-parsed as a uri
+  - If 'val' is a list or dict, all its string and uri elements have the replacement applied following the rules above
   
-  For dicts and lists, the string replacement is not recursive. (For instance, the replacement will
-  not reach inside of dicts nested within lists.)
+  For lists and dicts, the string replacement is recursive.
+  
+  Examples:
+  
+    "hello".replace("hell", "t")            >> "to"
+    `io/funcs.txt`.replace("txt", "trio")   >> `io/funcs.trio`
+    {a:["b","c"], d:`b`}.replace("b", "x")  >> {a:["x","c"], d:`x`}
 func
 overridable
 src:
   (val, from, to) => do
-    // Convenience URI replacement function
+    // Convenience Uri replacement function
     replaceUri: (v, f, t) => v.toStr.replace(f, t).parseUri
   
     // String
     if (val.isStr) return val.replace(from, to)
   
-    // URI
+    // Uri
     if (val.isUri) return val.replaceUri(from, to)
   
-    // Dict
+    // Dict or List
     if (val.isDict or val.isList) do
-      return val.map() v => do
-        if (v.isStr) return v.replace(from, to)
-        if (v.isUri) return v.replaceUri(from, to)
-        v // Default
-      end
+      return val.map(v => replace2(v, from, to))
     end
   end
 ---

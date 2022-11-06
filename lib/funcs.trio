@@ -51,6 +51,34 @@ overridable
 src:
   (fun) => params(fun).size
 ---
+name:cvrmse
+doc:
+  Calculate the coefficient of variation of the root-mean-square error (CV[RMSE]) for vector **yhat** with respect to measurement vector **y**, following the CV(RMSE) formula given in ASHRAE Guideline 14.
+  
+  - **y**: vector (numeric list) of measured data
+  - **yhat**: vector (numeric list) of modeled or predicted data
+  - **p**: number of parameters in the model (default = 1)
+func
+overridable
+src:
+  (y, yhat, p:1) => do
+    // Check dimensions
+    if (y.size != yhat.size) throw "Lists 'y' and 'yhat' must have the same dimension."
+    
+    // Parameters
+    n: y.size
+    
+    // Intermediate calcs
+    ybar: y.fold(mean)
+    err: yhat.map() (v, i) => y[i] - v
+    
+    // CV(RMSE) calc
+    out: sqrt(err.map(v => v*v).fold(sum) / (n - p)) / (ybar)
+    
+    // Return dimensionless
+    out.as("")
+  end
+---
 name:dictToFilter
 doc:
   Transforms dict **d** into a string compatible with `parseFilter`. The resulting filter string matches records with tags that include all the name-value pairs in **d**.
@@ -799,6 +827,34 @@ src:
   
     // Execute join
     joinWithMethod("left", a, b, by, opts)
+  end
+---
+name:nmbe
+doc:
+  Calculate the normalized mean bias error (NMBE) for vector **yhat** with respect to measurement vector **y**, following the NMBE formula given in ASHRAE Guideline 14.
+  
+  - **y**: vector (numeric list) of measured data
+  - **yhat**: vector (numeric list) of modeled or predicted data
+  - **p**: number of parameters in the model (default = 1)
+func
+overridable
+src:
+  (y, yhat, p:1) => do
+    // Check dimensions
+    if (y.size != yhat.size) throw "Lists 'y' and 'yhat' must have the same dimension."
+    
+    // Parameters
+    n: y.size
+    
+    // Intermediate calcs
+    ybar: y.fold(mean)
+    err: yhat.map() (v, i) => y[i] - v
+    
+    // NMBE calc
+    out: err.fold(sum) / ((n - p)*ybar)
+    
+    // Return dimensionless
+    out.as("")
   end
 ---
 name:orAll

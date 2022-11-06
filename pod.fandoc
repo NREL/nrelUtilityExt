@@ -214,6 +214,24 @@ Additional text parsing functions to complement the core 'parse*' functions:
 
 These now use regex and/or wrap `ioReadZinc`, so they should be safe to use on arbitrary input text.
 
+Date Range Functions [#daterange]
+*********************************
+
+Functions that return DateSpans corresponding to fiscal years:
+ 
+- `fiscalYear`
+- `thisFiscalYear`
+- `lastFiscalYear`
+
+Functions that return lists of standard time intervals (days, weeks, etc.) that cover a
+user-specified time span:
+
+- `toDayList`
+- `toWeekList`
+- `toMonthList`
+- `toYearList`
+- `toFiscalYearList`
+
 Function Import and Export [#importexport]
 ******************************************
 
@@ -229,9 +247,8 @@ Other Useful Stuff [#otherstuff]
 
 A brief sampling of other useful functions:
 
-- `fiscalYear`, `thisFiscalYear`, and `lastFiscalYear` return date ranges corresponding to fiscal years
-- `toDayList`, `toWeekList`, `toMonthList`, `toYearList`, and `toFiscalYearList` return lists of whole
-  days, weeks, months, years, or fiscal years covering a given time span
+- `nmbe` and `cvrmse` calculate the normalized mean bias error (NBME) and coefficient of variation of
+  the root-mean-square error (CV[RMSE]) per ASHRAE Guideline 14
 - `hasAny` and `hasAll` are extensions of `has` to multiple keys
 - `isNA` complements `isNull`, `isNaN`, and the various other core 'is*' funtions
 - `removeNA`, `removeNaN`, `removeNull`, and `removeVal` remove NAs, NaNs, nulls, or specific values

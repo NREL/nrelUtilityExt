@@ -8,7 +8,13 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 
 ## Unreleased
 
-[View Changes](https://github.com/NREL/nrelUtilityExt/compare/v1.1.4...develop)
+[View Changes](https://github.com/NREL/nrelUtilityExt/compare/main...develop)
+
+## [v2.0.0] (2022-11-06)
+
+[v2.0.0]: https://github.com/NREL/nrelUtilityExt/releases/tag/v2.0.0
+
+[View Changes](https://github.com/NREL/nrelUtilityExt/compare/v1.1.4...v2.0.0)
 
 ### Added
 

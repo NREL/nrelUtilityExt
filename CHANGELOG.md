@@ -20,8 +20,9 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 
 - `fiscalYear()`, `thisFiscalYear()`, `lastFiscalYear()`: Fiscal year date range
   functions
-- `toDayList`, `toWeekList`, `toMonthList`, `toYearList`, `toFiscalYearList`:
-  Generate lists of date ranges at regular intervals that enclose a time span
+- `toDayList()`, `toWeekList()`, `toMonthList()`, `toYearList`(),
+  `toFiscalYearList()`: Generate lists of date ranges at regular intervals that
+  enclose a time span
 - `parseAuto()`, `parseCoord()`, `parseDict()`, `parseList()`: Parsing functions
 - `orAll()`, `andAll()`: Logical OR and AND fold functions
 - `product()`: Cumulative product fold function

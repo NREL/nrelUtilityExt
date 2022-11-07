@@ -1061,7 +1061,7 @@ src:
 name:parseRef2
 func
 doc:
-  **Deprecated**; tn SkySpark 3.1.2+, `parseRef` already strips leading "@".
+  **Deprecated**; in SkySpark 3.1.2+, `parseRef` already strips leading "@".
   
   Convenience wrapper for `parseRef` that supports leading "@" without throwing error.
 src:

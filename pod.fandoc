@@ -41,14 +41,14 @@ Parameters [#joinparams]
 
 The '*Join' functions accept the following parameters:
 
-- **a**, **b**: Grids to join
-- **by**: Columns to join by. If 'by' is null (the default), then '*Join' will perform a natural
+- 'a', 'b': Grids to join
+- 'by': Columns to join by. If 'by' is null (the default), then '*Join' will perform a natural
   join, using columns with names common to both 'a' and 'b'. 'by' may also be:
   - A string specifying a single common column name
   - A list of strings specifying multiple common column names
   - A dict in the form '{x:y, ...}' where each key name 'x' is a column name in 'a' and each key
     value 'y' (which must be a string) is a corresponding column name in 'b'
-- **opts:** A dict of control options; see [Options]`ext-nrelUtility::doc#joinopts`
+- 'opts': A dict of control options; see [Options]`ext-nrelUtility::doc#joinopts`
     
 Options [#joinopts]
 ===================
@@ -62,13 +62,13 @@ The '*Join' functions support the following options:
   - '"b"': Values from 'b' overwrite values from 'a'
   - '"both"': Keeps values from both 'a' and 'b', disambiguated by suffix
   - '"neither"' or '"drop"': Drops keys with conflicting values (replaces with null)
-  - '"na"': Replaces conflicting values with *NA*
+  - '"na"': Replaces conflicting values with `haystack::NA`
   
   The default is '"both"'. This option has no effect for `semiJoin` and `antiJoin`.
 - 'suffix': When 'keep == "both"', specifies suffixes to use to disambiguate non-joined duplicate
   columns in 'a' and 'b'. May be:
   
-  - A list of strings of length 2, corresponding to suffixes for columns in 'a' and 'b'
+  - A list of length 2, containing strings corresponding to suffixes for columns in 'a' and 'b'
   - A dict with key names 'a' and 'b', corresponding to suffixes for columns in 'a' and 'b'
   
   Suffixes are appended using an underscore as a separator. The default suffixes are '"a"' and
@@ -77,7 +77,7 @@ The '*Join' functions support the following options:
 Notes [#joinnotes]
 ==================
 
-1. If 'by' is not null, there is a potential for non-joined duplicate columns between grids 'a'
+1. If 'by' is not 'null', there is a potential for non-joined duplicate columns between grids 'a'
    and 'b'. In the joined grid, some rows may have conflicting values in these columns,
    that is, values for the same key (column) that differ between 'a' and 'b'. The 'keep'
    [option]`ext-nrelUtility::doc#joinopts` governs what happens when there is such a conflict.
@@ -255,7 +255,5 @@ A brief sampling of other useful functions:
   from a list or dict
   
 For a complete list, see [the function listing]`ext-nrelUtility::index`.
-
-For a change log, see the Releases section of the
-[nrelUtilityExt]`https://github.com/NREL/nrelUtilityExt/releases/`
+For a change log, see the [nrelUtilityExt]`https://github.com/NREL/nrelUtilityExt/blob/main/CHANGELOG.md`
 repository on GitHub.

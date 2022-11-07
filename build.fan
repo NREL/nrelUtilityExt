@@ -1,6 +1,6 @@
 #! /usr/bin/env fan
 
-// Copyright (C) 2021, Alliance for Sustainable Energy, LLC
+// Copyright (C) 2022, Alliance for Sustainable Energy, LLC
 // All Rights Reserved
 
 using build
@@ -14,8 +14,8 @@ class Build : BuildPod
   new make()
   {
     podName = "nrelUtilityExt"
-    summary = "Missing Axon Utility Functions"
-    version = Version("1.1.4")
+    summary = "Missing Axon utility functions"
+    version = Version("2.0.0")
     meta    = [
                 "ext.name":        "nrelUtility",
                 "ext.depends":     "io",
@@ -27,7 +27,7 @@ class Build : BuildPod
                 "license.name":    "BSD-3",
                 "skyspark.docExt": "true",
               ]
-    resDirs = [`locale/`, `lib/`]
+    resDirs = [`lib/`, `locale/`]
     index   = ["skyarc.ext": "nrelUtilityExt"]
   }
   

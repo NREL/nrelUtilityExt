@@ -1,251 +1,565 @@
-name:antiJoin
+name:andAll
+doc:"Fold function to apply logical AND to a set of Boolean values. Return 'null' if no values."
 func
-doc:
-  Returns all rows from 'a' where there are *not* matching values in 'b', keeping columns from 'a'
-  only.
+overridable
+src:
+  (val, acc) => do 
+    // Start
+    if (val == foldStart()) do
+      return null
   
-  'antiJoin' is one of six SQL-style joins modeled on the two-table verbs in the
-  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
-  more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-nrelUtility::doc#joins`.
+    // End
+    else if (val == foldEnd()) do
+      return acc
+  
+    // Skip null
+    else if (val == null) do
+      return acc
+  
+    // Accumulate: apply rolling logical AND
+    else if (acc == null) do
+      return val
+    else do
+      return (val and acc)
+    end
+  end
+---
+name:antiJoin
+doc:
+  Returns all rows from grid 'a' where there are *not* matching values in grid 'b', keeping columns from 'a' only.
+  
+  'antiJoin' is one of six SQL-style joins modeled on the two-table verbs in the [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the [join documentation]`ext-nrelUtility::doc#joins`.
+func
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
     if (a.isEmpty or b.isEmpty) return a
-
+  
     // Execute join
     joinWithMethod("anti", a, b, by, opts)
   end
 ---
 name:arity
-func
 doc:
-  Given a function name 'fn', return the number of arguments the function accepts.
+  Return the number of arguments function 'fun' accepts.
+func
+overridable
 src:
-  (fn) => params(fn).size
+  (fun) => params(fun).size
+---
+name:cvrmse
+doc:
+  Calculate the coefficient of variation of the root-mean-square error (CV[RMSE]) for vector 'yhat' with respect to measurement vector 'y', following the CV(RMSE) formula given in ASHRAE Guideline 14.
+  
+  - 'y': vector (numeric list) of measured data
+  - 'yhat': vector (numeric list) of modeled or predicted data
+  - 'p': number of parameters in the model (default = 1)
+func
+overridable
+src:
+  (y, yhat, p:1) => do
+    // Check dimensions
+    if (y.size != yhat.size) throw "Lists 'y' and 'yhat' must have the same dimension."
+    
+    // Parameters
+    n: y.size
+    
+    // Intermediate calcs
+    ybar: y.fold(mean)
+    err: yhat.map() (v, i) => y[i] - v
+    
+    // CV(RMSE) calc
+    out: sqrt(err.map(v => v*v).fold(sum) / (n - p)) / (ybar)
+    
+    // Return dimensionless
+    out.as("")
+  end
 ---
 name:dictToFilter
-func
 doc:
-  Transform the contents of a dict into a string compatible with `parseFilter`. The resulting
-  filter string matches records with tags that include all the name-value pairs in dict 'd'.
-
+  Transforms dict 'd' into a string compatible with `parseFilter`. The resulting filter string matches records with tags that include all the name-value pairs in 'd'.
+  
   Notes
   -----
   
-  1. All simple Axon data types are supported except dateTimes, which have no Axon literal.
-  2. Dicts that contain reserved keywords as names, such as "return", will not throw an error but
-     but may cause downstream functions such as `parseFilter` to fail.
-  3. Null values in 'd' will cause `parseFilter` to fail downstream; use the utility function
-     `removeNull` as needed to clean the input.
+  1. Handles any axon data type supported by `toAxonCode`. However, data types without an Axon literal (e.g. dateTimes) may cause downstream functions such as `parseFilter` to fail.
+  2. Dicts that contain reserved keywords as names, such as "return", will not throw an error but may cause downstream functions such as `parseFilter` to fail.
+  3. Null values in 'd' are removed.
+func
+overridable
 src:
   (d) => do
-    // Start filter string
-    s: ""
-  
-    // Create filter string
-    d.each() (v, n) => do
-      // Add logical operator
-      if (s.size > 0) s = s + " and "
-  
-      // Add name
-      s = s + n
-  
-      // Add value
-      if (v != marker()) do
-        s = s + "==" + v.toAxonCode
+    // Remove nulls
+    d = d.removeNull
+    
+    // Map dict vals to axon code for filter
+    d = d.map() (v, n) => do
+      // Name
+      if (v == marker()) do
+        return n
+        
+      // Name-Value
+      else do
+        return n + "==" + v.toAxonCode
       end
     end
-  
-    // Return filter string
-    s
+    
+    // Collect, concatenate, and return
+    d.vals.concat(" and ")
   end
 ---
 name:exportFunctions
-func
 doc:
-  Exports a grid of functions 'funcs' to a tagged record input/output (TRIO) file 'filename' for
-  reuse elsewhere. If missing, the "io/" prefix and ".trio" suffix are added to 'filename'
-  automatically. See also `importFunctions`. 
+  Exports one or more 'functions' to a `docHaystack::Trio` file at the specified 'handle'. See also `importFunctions`.
   
-  Examples
-  --------
+  Options
+  -------
   
-    readAll(func).exportFunctions("myFunctions")  >> Writes to `io/myFunctions.trio`
+  Export behavior can be modified by control options passed via 'opts':
+  
+  - 'merge': Dict to merge onto functions prior to export
+  - 'preview': Boolean; if 'true' previews the export (see below)
+  - 'sort': Tag name or function for sorting 'functions' prior to export; see `sort` (default = "name")
+  
+  If 'preview == true', returns the list of records that would have been written to 'handle'. The 'preview' option may be also be passed as a marker, with 'preview' equivalent to 'preview:true' and '-preview' equivalent to 'preview:false', or by passing 'handle = null'.
+  
+  If the 'sort' option is missing (e.g. by passing '-sort') or invalid, then the function records are not sorted prior to export. If 'sort' is present but is not a string or a function, then it is ignored (with a warning).
+func
+overridable
 src:
-  (funcs, filename) => do
-    // Check filename
-    if (not(filename.toStr.startsWith("io/"))) filename = "io/" + filename.toStr
-    if (not(filename.toStr.lower.endsWith(".trio"))) filename = filename.toStr + ".trio"
-    
-    // Parse URI
-    if (not(filename.isUri)) filename = filename.parseUri
-    
+  (functions, handle:null, opts:{sort:"name"}) => do
+    // Default options
+    opts = {sort:"name"}.merge(opts)
+  
+    // T/F options
+    opts = opts.set("preview", handle == null or (opts.has("preview") and opts["preview"] != false))
+  
+    // Check sort option
+    if (opts.has("sort") and not opts->sort.isFunc and not opts->sort.isStr) do
+      logWarn(
+        {name:"nrelUtility", funcTrace:"exportFunctions"},
+        "'sort' option is not a string or function; ignoring."
+      )
+      opts = opts.remove("sort")
+    end
+  
+    // Parse handle
+    if (not(handle.isUri) and handle != null) handle = handle.parseUri
+  
+    // Coerce to grid
+    functions = functions.toGrid
+  
+    // Optional merge and sort
+    if (opts.has("merge")) functions = functions.map(f => f.merge(opts->merge))
+    if (opts.has("sort"))  functions = functions.sort(opts->sort)
+  
+    // Remove 'id' and 'mod'
+    functions = functions.map(f => f.remove("id").remove("mod"))
+  
+    // Preview mode
+    if (opts->preview) return functions
+  
     // Write output
-    funcs.toGrid
-      .map(f => f.remove("id").remove("mod"))
-      .sort("name")
-      .ioWriteTrio(filename)
+    functions.ioWriteTrio(handle)
   end
 ---
-name:fullJoin
-func
+name:fiscalYear
 doc:
-  Returns all rows and columns from both 'a' and 'b'. Rows in 'a' with no match in 'b' will have
-  missing entries in the columns joined from 'b', and vice versa.
+  Given a numeric year or date 'val', return a `haystack::DateSpan` representing the fiscal year associated with that year/date, optionally with an 'offset' in whole years.
   
-  'fullJoin' is one of six SQL-style joins modeled on the two-table verbs in the
-  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
-  more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-nrelUtility::doc#joins`.
+  Fiscal years are numbered by the calendar year in which they end. Fiscal years begin on the 1st of the month returned by `fiscalYearStart` (October by default). If your project requires a different fiscal year start, override `fiscalYearStart` locally.
+  
+    fiscalYear(2020)        >> DateSpan("2019-10-01,2020-09-30")
+    fiscalYear(2019-02-17)  >> DateSpan("2018-10-01,2019-09-30")
+    fiscalYear(today(), -1) >> Yields prior fiscal year
+func
+overridable
+src:
+  (val, offset:0) => do
+    // Fiscal year start and end months
+    fyStartMonth: fiscalYearStart()
+    fyEndMonth: if (fyStartMonth > 1) fyStartMonth - 1 else 12
+    
+    // Get year of interest
+    if (val.isNumber) do
+      // Whole year
+      yr: floor(val)
+  
+    else if (val.isDate or val.isDateTime) do
+      // Compute nominal fiscal year associated with date
+      yr: year(val) + max(0, month(val) <=> fyEndMonth)
+  
+    else do
+      // Unsupported input
+      throw "'val' must be a date, dateTime, or number."
+    end
+    
+    // Check offset
+    if (remainder(offset, 1) != 0) throw "'offset' must be a whole integer"
+  
+    // Offset
+    yr = yr + offset
+  
+    // Calculate span and return
+    if (fyStartMonth != 1) do
+      fyStart: date(yr-1, fyStartMonth, 1)
+      fyEnd: date(yr, fyEndMonth, numDaysInMonth(date(yr, fyEndMonth, 1)))
+      return fyStart..fyEnd
+    else do
+      // For January start, fiscal year equals calendar year
+      return toDateSpan(yr)
+    end
+  end
+  
+---
+name:fiscalYearStart
+doc:
+  Returns the first month of the fiscal year as an integer.
+  
+  The value returned by this function defines the fiscal year start date for `fiscalYear` and related functions. The default is 10 (October), corresponding to the U.S. Federal fiscal year start date of October 1. If your project requires a different fiscal year, override this function locally.
+func
+overridable
+src:"() => 10"
+---
+name:fullJoin
+doc:
+  Returns all rows and columns from grids 'a' and 'b'. Rows in 'a' with no match in 'b' will have missing entries in the columns joined from 'b', and vice versa.
+  
+  'fullJoin' is one of six SQL-style joins modeled on the two-table verbs in the [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the [join documentation]`ext-nrelUtility::doc#joins`.
+func
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
     if (a.isEmpty) return b
     if (b.isEmpty) return a
-
+  
     // Execute join
     joinWithMethod("full", a, b, by, opts)
   end
 ---
 name:hasAll
-func
 doc:
-  Returns *true* if 'x' has all the elements in 'names'.
+  Returns 'true' if 'x' has all the elements in 'names'.
   
   - For dicts, search by key names
   - For grids, search by column names
+func
+overridable
 src:
   (x, names) => do
     // Ensure names is a list
     if (not(names.isList)) throw "'names' must be a list of strings."
-    
+  
     // On any missing name, return false
     if (x.isGrid) do
       out: names.eachWhile() n => if (n.in(x.colNames)) null else false
-    
+  
     else if (x.isDict) do
       out: names.eachWhile() n => if (x.has(n)) null else false
-    
+  
     else do
       throw "'x' must be a dict or grid."
     end
-    
+  
     // Return: null => true, false => false
     if (out == null) return true else return false
   end
 ---
 name:hasAny
-func
 doc:
-  Returns *true* if 'x' has any of the elements in 'names'.
+  Returns 'true' if 'x' has any of the elements in 'names'.
   
   - For dicts, search by key names
   - For grids, search by column names
+func
+overridable
 src:
   (x, names) => do
     // Ensure names is a list
     if (not(names.isList)) throw "'names' must be a list of strings."
-    
+  
     // On any matched name, return true
     if (x.isGrid) do
       out: names.eachWhile() n => if (n.in(x.colNames)) true else null
-    
+  
     else if (x.isDict) do
       out: names.eachWhile() n => if (x.has(n)) true else null
-    
+  
     else do
       throw "'x' must be a dict or grid."
     end
-    
+  
     // Return: true => true, null => false
     if (out == null) return false else return true
   end
 ---
 name:importFunctions
-func
 doc:
-  Imports a tagged record input/output (TRIO) file of functions and commits them to the Folio.
-  If missing, the "io/" prefix and ".trio" suffix are added to 'filename' automatically. See also
-  `exportFunctions`. 
+  Imports function records from 'source', and optionally commits them to the Folio. Supported data types for 'source' are:
   
-  Examples
-  --------
+  - `sys::Str`: Parsed as `docHaystack::Trio` using `ioReadTrio`
+  - `sys::Uri`: Parsed as `docHaystack::Trio` using `ioReadTrio`
+  - Anything supported by `toRecList`: The 'func' records to be imported as a list of Dicts
   
-    importFunctions("myFunctions")  >> Reads from `io/myFunctions.trio`
+  Other actions taken on import:
+  
+  - Ignores any records not tagged with 'func'
+  - Drops 'func' records missing 'name' or 'src' tags (with a warning)
+  - Removes existing 'id' and 'mod' tags from imported records
+  
+  Options
+  -------
+  
+  Import behavior can be modified by control options passed by 'opts':
+  
+  - 'commit': Boolean; if 'true' commits the imported functions to the database (default = 'false')
+  - 'conflict': Action on conflicts; one of "skip", "overwrite", or "rename" (default = "skip")
+  - 'filter': `sys::Str` compatible with `parseFilter`; filters (subsets) the imported function records
+  - 'merge': Dict to merge onto imported functions
+  - 'preview': Boolean; if 'true' previews the import (see below)
+  - 'warn': Boolean; if 'true' log warnings (default = 'true')
+  
+  The 'commit', 'preview', and 'warn' options may be also be passed as markers, with 'x' equivalent to 'x:true' and '-x' equivalent to 'x:false'.
+  
+  Conflicts
+  ---------
+  
+  Conflicts with existing functions (matched by 'name') are handled based on the 'conflict' option:
+  
+  - skip: Skip import
+  - overwrite: Merge imported function onto existing function, overwriting it
+  - rename: Rename imported function by appending an integer
+  
+  Renaming will increment the appended integer until no conflict exists. For example, if the imported function is called 'foo' but functions 'foo' and 'foo1' already exist, then the imported function will be renamed 'foo2'.
+  
+  Previewing Functions
+  --------------------
+  
+  Enabling the 'preview' option returns a grid summarizing the functions to be imported, whether they already exist, and what action will be taken on conflicts. The grid returned has columns:
+  
+  - 'name': Name of the function
+  - 'rec': Nested dict with full function record
+  - 'exists': Marker; whether the function already exists
+  - 'action': `sys::Str`; action that will be taken
+  
+  Enabling 'preview' overrides 'commit' and 'warn' to 'false'. Note that if 'preview' is 'false' and 'commit' is 'false', the function records themselves are returned (not the summary grid described above).
+func
+overridable
 src:
-  (filename) => do
-    // Check filename
-    if (not(filename.toStr.startsWith("io/"))) filename = "io/" + filename.toStr
-    if (not(filename.toStr.lower.endsWith(".trio"))) filename = filename.toStr + ".trio"
+  (source, opts:{}) => do
+    // Default options
+    opts = {conflict:"skip", warn:true}.merge(opts)
     
-    // Parse URI
-    if (not(filename.isUri)) filename = filename.parseUri
+    // T/F options
+    opts = opts.set("preview", opts.has("preview")  and opts["preview"] != false                      )
+    opts = opts.set("commit",  opts.has("commit")   and opts["commit"]  != false and not opts->preview)
+    opts = opts.set("warn",    opts.has("warn")     and opts["warn"]    != false and not opts->preview)
     
-    // Read and commit functions
-    ioReadTrio(filename)
-      .findAll(rec => rec.has("func"))
-      .each() f => commit(diff(null, f, {add}))
+    // Action on conflict
+    opts = opts.set("conflict", opts->conflict.lower)
+    if (not opts->conflict.in(["skip", "overwrite", "rename"])) do
+      throw "'conflict' option must be one of: \"skip\", \"overwrite\", \"rename\""
+    end
+    
+    // Str or Uri: Read funcs from TRIO
+    if (source.isStr or source.isUri) do
+      funcs: ioReadTrio(source).findAll(rec => rec.has("func"))
+      
+    // Anything else: Should already contain the func records as list of Dicts
+    else do
+      funcs: source.toRecList
+    end
+    
+    // Disambiguate with suffix
+    disambiguateName: (n, i) => do
+      // New name
+      newName: n + i.toStr
+      if (read(func and name==newName, false) == null) return newName
+      disambiguateName(n, i+1)
+    end
+    
+    // For tracking
+    noName: 0
+    noSrc: 0
+    
+    // Apply filter
+    if (opts.has("filter")) do
+      // Verify filter
+      if (not opts->filter.isStr) do
+        throw "'filter' option must be a Str."
+      else do
+        filterFunc: parseFilter(opts->filter).filterToFunc
+      end
+      
+      // Filter imported records
+      funcs = funcs.findAll(filterFunc)
+    end
+    
+    // Process funcs
+    funcs = funcs.map() f => do
+      // Check for 'name' and 'src' tags
+      if (f.missing("name") or f.missing("src")) do
+        noName = noName + (if (f.missing("name")) 1 else 0)
+        noSrc  = noSrc  + (if (f.missing("src"))  1 else 0)
+        return null
+      end
+      
+      // Check for existing
+      exists: read(func and name==f->name, false) != null
+      
+      // Action
+      action: if (exists) opts->conflict else "new"
+      
+      // Remove any existing 'id' and 'mod' tags
+      f = f.remove("id").remove("mod")
+      
+      // Merge template
+      if (opts.has("merge")) f = f.merge(opts->merge)
+      
+      // Preview
+      if (opts->preview) do
+        preview: {name:f->name, rec:f, action:action}
+        if (exists) do
+          preview = preview.set("exists", marker())
+        else do
+          preview = preview.set("exists", null)
+        end
+        return preview
+      end
+      
+      // Action: New
+      if (action == "new") do
+        return f
+      
+      // Action: Skip
+      else if (action == "skip")
+        return null
+      
+      // Action: Overwrite
+      else if (action == "overwrite") do
+        return read(func and name==f->name).merge(f)
+      
+      // Action: Rename
+      else if (action == "rename") do
+        return f.set("name", disambiguateName(f->name, 1))
+      
+      // Invalid action
+      else do
+        throw "Invalid action: " + action
+      end
+    end
+    
+    // Remove nulls
+    funcs = funcs.removeNull
+    
+    // Log warning for functions with no name
+    if (noName > 1 and opts->warn) do
+      logWarn(
+        {name:"nrelUtility", funcTrace:"importFuncs"},
+        noName + " functions without a 'name' tag were dropped."
+      )
+    else if (noName == 1 and opts->warn) do    
+      logWarn(
+        {name:"nrelUtility", funcTrace:"importFuncs"},
+        noName + " function without a 'name' tag was dropped."
+      )
+    end
+  
+    // Log warning for functions with no source
+    if (noSrc > 1 and opts->warn) do
+      logWarn(
+        {name:"nrelUtility", funcTrace:"importFuncs"},
+        noSrc + " functions without a 'src' tag were dropped."
+      )
+    else if (noName == 1 and opts->warn) do    
+      logWarn(
+        {name:"nrelUtility", funcTrace:"importFuncs"},
+        noSrc + " function without a 'src' tag was dropped."
+      )
+    end
+  
+    // Preview mode
+    if (opts->preview) do
+      return funcs.toGrid.reorderCols(["name", "rec", "exists", "action"])
+    end
+    
+    // Commit mode
+    if (opts->commit) do
+      // Create diffs
+      diffs: funcs.map() f => do
+        // Existing
+        if (f.has("id")) do
+          diff(f.toRecId.readById, f.remove("id").remove("mod"))
+          
+        // New
+        else do
+          diff(null, f, {add})
+        end
+      end
+      
+      // Commit
+      return diffs.commit
+    end
+    
+    // Default
+    return funcs
+    
   end
 ---
 name:in
+doc:"Convenience for 'b.contains(a)'; see `contains`."
 func
-doc:
-  Convenience for 'b.contains(a)'; see `contains`.
-src:
-  (a, b) => b.contains(a)
+overridable
+src:"(a, b) => b.contains(a)"
 ---
 name:innerJoin
-func
 doc:
-  Returns all rows from 'a' where there are matching values in 'b' and all columns from 'a' and 'b'.
-  If there are multiple matches between 'a' and 'b', all combinations of the matches are returned.
+  Returns all rows from grid 'a' where there are matching values in grid 'b' combining all columns from 'a' and 'b'. If there are multiple matches between 'a' and 'b', all combinations of the matches are returned.
   
-  'innerJoin' is one of six SQL-style joins modeled on the two-table verbs in the
-  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
-  more information, including syntax for 'by' and valid options for 'opts', see the
+  'innerJoin' is one of six SQL-style joins modeled on the two-table verbs in the   [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the
   [join documentation]`ext-nrelUtility::doc#joins`.
+func
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
     if (a.isEmpty or b.isEmpty) return [].toGrid
-
+  
     // Execute join
     joinWithMethod("inner", a, b, by, opts)
   end
 ---
 name:intersect
-func
 doc:
   Returns the set intersection of two lists or dicts 'a' and 'b'. Behavior for dicts differs by
   'checked':
   
-  - If 'checked' is *true*, verifies that keys included in both 'a' and 'b' have matching values,
+  - If 'checked == true', verifies that keys included in both 'a' and 'b' have matching values,
     and throws an error on mismatch.
-  - If 'checked' is *false*, excludes name-value pairs with matching keys but differing values.
-
-  Examples
-  --------
+  - If 'checked == false', excludes name-value pairs with matching keys but differing values.
+  
+  Examples:
   
     intersect([1, 2, 3],[2, 3, 4])        >> [2, 3]
     intersect({a, b}, {a, c})             >> {a}
     intersect({a, b:1}, {a, b:1})         >> {a, b:1}
     intersect({a, b:1}, {a, b:2})         >> error
     intersect({a, b:1}, {a, b:2}, false)  >> {a}
+func
+overridable
 src:
   (a, b, checked:true) => do
     // Lists
     if(a.isList and b.isList) do
       return a.findAll(v => b.contains(v)).unique
-    
+  
     // Dicts
     else if(a.isDict and b.isDict) do
       // Common names
       cn: a.names.findAll() n => b.names.contains(n)
-      
+  
       // Filter
       a = a.findAll() (v, n) => cn.contains(n)
-      
+  
       // Value matching
       if (checked) do
         // Values must match
@@ -254,10 +568,10 @@ src:
         // Discard keys with mismatched values
         a.each() (v, n) => if (b[n] != v) a = a.remove(n)
       end
-      
+  
       // Return
       return a
-    
+  
     // Other
     else do
       throw "Invalid arguments; need two lists or two dicts."
@@ -265,37 +579,28 @@ src:
   end
 ---
 name:isNA
+doc:"Returns 'true' if 'val' equals `haystack::NA`, 'false' otherwise."
 func
-doc:
-  Returns *true* if 'val' is equal to NA, *false* otherwise.
-src:
-  (val) => val == na() 
----
-name:isNull
-func
-doc:
-  Returns *true* if 'val' is null, *false* otherwise.
-src:
-  (val) => val == null
+overridable
+src:"(val) => val == na()"
 ---
 name:joinWithMethod
+doc:"Core implementation of '*Join()' functions. Not intended to be used directly."
 func
-nodoc
 src:
-  // Core implementation of *Join functions
   (method, a, b, by, opts) => do
-    
+  
     //// Options ///////////////////////////////////////////////////////////////////////////////////
-    
+  
     // Option type checking
     if (not(opts.isDict)) throw "'opts' must be a dict."
-        
+  
     // Method
     method = method.lower
-    
+  
     // Merge defaults
     opts = {keep:"both", suffix:{a:"a", b:"b"}}.merge(opts)
-    
+  
     // Sanitize 'keep' option
     opts = opts.set("keep", opts->keep.lower)
     if (not(opts["keep"].in(["a", "b", "both", "neither", "drop", "na"]))) do
@@ -303,7 +608,7 @@ src:
     end
     if (opts["keep"] == "drop") opts = opts.set("keep", "neither")
     if (method.in(["semi","anti"])) opts = opts.set("keep", "a") // Override for antiJoin, semiJoin
-    
+  
     // Sanitize 'suffix' option
     if (opts["suffix"].isList) do
       if (opts->suffix.size < 2) throw "List for option 'suffix' must have two elements."
@@ -316,20 +621,20 @@ src:
     end else do
       throw "Option 'suffix' must be a list or dict."
     end
-    
+  
     //// Join Columns //////////////////////////////////////////////////////////////////////////////
-    
+  
     // Null: Natural join
     if (by == null) do
       by = intersect(colNames(a),colNames(b))
     end
-    
+  
     // String: Single column
     if (by.isStr) do
       by = {}.set(by, by)
     end
-    
-    // List: Multiple columns with same name 
+  
+    // List: Multiple columns with same name
     if (by.isList) do
       by.each() v => do
         if (not(v.isStr)) throw "Each element of 'by' must be a string."
@@ -338,57 +643,57 @@ src:
       by.each() v => newBy = newBy.set(v, v)
       by = newBy
     end
-    
-    // Dict: Multiple columns with same or different names 
+  
+    // Dict: Multiple columns with same or different names
     if (by.isDict) do
       by.each() v => do
         if (not(v.isStr)) throw "Each element of 'by' must be a string."
       end
-    
+  
     // Other: Error
     else do
       throw "If specified, 'by' must be a string, list, or dict containing valid column names."
     end
-    
+  
     // Check results
     by.each() (v, n) => do
       if (a.missing(n)) throw "Column \"" + n + "\" is missing from grid 'a'."
       if (b.missing(v)) throw "Column \"" + v + "\" is missing from grid 'b'."
     end
-    
+  
     // Key names = grid A columns, key values = grid B columns
-      
+  
     //// Merge Action Function /////////////////////////////////////////////////////////////////////
-    
+  
     joinMerge: (rowA, rowB, overlap, keep) => do
       // On conflict: keep A
       if (keep == "a") return merge(rowB, rowA)
-
+  
       // On conflict: keep B
       if (keep == "b") return merge(rowA, rowB)
-
+  
       // On conflict: keep both (columns already renamed)
       if (keep == "both") return merge(rowB, rowA)
-
+  
       // Find conflicts
       conflict: overlap.findAll() n => rowA.has(n) and rowB.has(n) and rowA[n] != rowB[n]
-
+  
       // On conflict: drop
       if (keep == "neither") do
         return merge(rowB, rowA).map((v, n) => if (n.in(conflict)) null else v)
       end
-
+  
       // On conflict: convert to NA
       if (keep == "na") do
         return merge(rowB, rowA).map((v, n) => if (n.in(conflict)) na() else v)
       end
     end
-    
+  
     //// Setup /////////////////////////////////////////////////////////////////////////////////////
-    
+  
     // Initialize output grid
     out: {}.toGrid
-    
+  
     // Check for conflicts (Left, Right, Inner, and Full joins only)
     if (method.in(["left", "right", "inner", "full"])) do
       // Overlapping columns (possible sources of conflicts)
@@ -396,7 +701,7 @@ src:
         colNames(a).setDiff(names(by)),
         colNames(b).setDiff(vals(by))
       )
-
+  
       // Preemptive column renaming
       if (opts->keep == "both") do
         overlap.each() n => do
@@ -405,19 +710,19 @@ src:
         end
       end
     end
-    
+  
     //// Perform Join //////////////////////////////////////////////////////////////////////////////
-    
+  
     // LEFT, INNER, FULL (Common and A-unique rows)
     if (method.in(["left", "inner", "full"])) do
-      
+  
       // Iterate on rows of A
       a.each() rowA => do
         // Find matches in B
         match: b.findAll() rowB => do
           by.all() (colB, colA) => rowA[colA] == rowB[colB]
         end
-
+  
         // No matches
         if (match.isEmpty) do
           if (method.lower == "inner") do
@@ -425,7 +730,7 @@ src:
           else do
             out = out.addRow(rowA) // LEFT, FULL
           end
-
+  
         // Matches
         else do
           out = out.addRows(
@@ -434,23 +739,23 @@ src:
           )
         end
       end
-      
+  
     end
-    
+  
     // RIGHT, FULL (B-unique rows)
     if (method.in(["right", "full"])) do
-      
+  
       // Iterate rows of B
       b.each() rowB => do
         // Find matches in A
         match: a.findAll() rowA => do
           by.all() (colB, colA) => rowA[colA] == rowB[colB]
         end
-
+  
         // No matches
         if (match.isEmpty) do
           out = out.addRow(rowB) // RIGHT, FULL
-
+  
         // Matches
         else if (method.lower == "right") do
           // RIGHT
@@ -460,127 +765,386 @@ src:
           )
         end
       end
-      
+  
     end
-        
+  
     // SEMI, ANTI
     if (method.in(["semi","anti"])) do
-    
+  
       // Iterate on rows of A
       a.each() rowA => do
         // Check for matches in B
         match: b.find() rowB => by.all() (colB, colA) => rowA[colA] == rowB[colB]
-          
+  
         // SEMI
         if (match != null and method.lower == "semi") out = out.addRow(rowA)
-        
+  
         // ANTI
         if (match == null and method.lower == "anti") out = out.addRow(rowA)
       end
-      
+  
     end
-    
+  
     //// Metadata //////////////////////////////////////////////////////////////////////////////////
-    
+  
     // To Do: Handle merging of grid and column metadata
-    
+  
     //// Post-Processing ///////////////////////////////////////////////////////////////////////////
-    
+  
     // Fix column order
     if (method.in(["left", "right", "inner", "full"])) do
       // A + B
-      colOrder: union(colNames(a),colNames(b)).intersect(colNames(out))  
+      colOrder: union(colNames(a),colNames(b)).intersect(colNames(out))
     else if (method.in(["semi","anti"])) do
       // A only
       colOrder: colNames(a).intersect(colNames(out))
     end
-    
+  
     // Enforce unique entries, restore column order and return
     return out.unique(colOrder).reorderCols(colOrder)
   end
 ---
-name:leftJoin
+name:lastFiscalYear
+doc:"Returns a `haystack::DateSpan` for the prior fiscal year. See `fiscalYear`."
 func
+overridable
+src:"() => fiscalYear(today(),-1)"
+---
+name:leftJoin
 doc:
-  Returns all rows from 'a' and all columns from 'a' and 'b'. Rows in 'a' with no match in 'b' will
-  have missing entries in the columns joined from 'b'. If there are multiple matches between 'a' and
-  'b', all combinations of the matches are returned.
+  Returns all rows from grid 'a' and all columns from grids 'a' and 'b'. Rows in 'a' with no match in 'b' will have missing entries in the columns joined from 'b'. If there are multiple matches between 'a' and 'b', all combinations of the matches are returned.
   
-  'leftJoin' is one of six SQL-style joins modeled on the two-table verbs in the
-  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
-  more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-nrelUtility::doc#joins`.
+  'leftJoin' is one of six SQL-style joins modeled on the two-table verbs in the [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the [join documentation]`ext-nrelUtility::doc#joins`.
+func
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
     if (a.isEmpty or b.isEmpty) return a
-
+  
     // Execute join
     joinWithMethod("left", a, b, by, opts)
   end
 ---
-name:outerJoin
-func
+name:nmbe
 doc:
-  Alias for `fullJoin`.
+  Calculate the normalized mean bias error (NMBE) for vector 'yhat' with respect to measurement vector 'y', following the NMBE formula given in ASHRAE Guideline 14.
+  
+  - 'y': vector (numeric list) of measured data
+  - 'yhat': vector (numeric list) of modeled or predicted data
+  - 'p': number of parameters in the model (default = 1)
+func
+overridable
 src:
-  (a, b, by:null, opts:{}) => fullJoin(a, b, by, opts)
+  (y, yhat, p:1) => do
+    // Check dimensions
+    if (y.size != yhat.size) throw "Lists 'y' and 'yhat' must have the same dimension."
+    
+    // Parameters
+    n: y.size
+    
+    // Intermediate calcs
+    ybar: y.fold(mean)
+    err: yhat.map() (v, i) => y[i] - v
+    
+    // NMBE calc
+    out: err.fold(sum) / ((n - p)*ybar)
+    
+    // Return dimensionless
+    out.as("")
+  end
+---
+name:orAll
+doc:"Fold function to apply logical OR to a set of Boolean values. Return 'null' if no values."
+func
+overridable
+src:
+  (val, acc) => do 
+    // Start
+    if (val == foldStart()) do
+      return null
+  
+    // End
+    else if (val == foldEnd()) do
+      return acc
+  
+    // Skip null
+    else if (val == null) do
+      return acc
+  
+    // Accumulate: apply rolling logical OR
+    else if (acc == null) do
+      return val
+    else do
+      return (val or acc)
+    end
+  end
+---
+name:outerJoin
+doc:"Alias for `fullJoin`."
+func
+src:"(a, b, by:null, opts:{}) => fullJoin(a, b, by, opts)"
+---
+name:parseAuto
+doc:
+  Parse a `sys::Str` 'val', automatically guessing its data type. Supports all `docHaystack::Zinc` data types plus the following keywords:
+  
+  - True: 'true', 'True', or 'TRUE' (as Bool)
+  - False: 'false, 'False', or 'FALSE' (as Bool)
+  - Null: 'null', 'Null', or 'NULL'
+  - NA: 'na', 'Na', or 'NA'
+  - Not a Number (NaN): 'nan', 'NaN', or 'NAN'
+  - Positive Infinity: '+inf', '+Inf', or '+INF'
+  - Negative Infinity: '-inf', '-Inf', or '-INF'
+  
+  For everything else, this function wraps `ioReadZinc`. The resulting parsing behavior supports most basic [Axon]`docHaxall::AxonLang` data types, but ranges, triple-quoted string literals, and raw string literals are not supported.
+  
+  If parsing fails and 'checked' is 'false' returns null; otherwise throws an error.
+func
+overridable
+src:
+  (val, checked:true) => do
+    // Try block
+    try do
+      // Check input
+      if (not val.isStr) throw "'val' must a string."
+      if (val.contains("\n")) throw "'val' must not contain newline characters."
+  
+      // Keywords: True, False, Null, NA, NaN, +Inf, -Inf
+      if (val == "true"  or val == "True"  or val == "TRUE" ) return true
+      if (val == "false" or val == "False" or val == "FALSE") return false
+      if (val == "null"  or val == "Null"  or val == "NULL" ) return null
+      if (val == "na"    or val == "Na"    or val == "NA"   ) return na()
+      if (val == "nan"   or val == "NaN"   or val == "NAN"  ) return nan()
+      if (val == "+inf"  or val == "+Inf"  or val == "+INF" ) return posInf()
+      if (val == "-inf"  or val == "-Inf"  or val == "-INF" ) return negInf()
+  
+      // Parse using ZINC grammar
+      return ioReadZinc("ver:\"3.0\"\nval\n" + val).first["val"] 
+    
+    // Catch block
+    catch (ex) do
+      if (checked) throw (ex)
+      return null
+    end
+    
+    // TO DO: Unit test(s)
+    // parseAuto("{a, b:0kW, c:[1, 2, 5], d:\"Three sir!\", e:{foo bar:\"baz\"}}")
+  end
+---
+name:parseCoord
+doc:
+  Parse a `sys::Str` 'val' as a `haystack::Coord`. 'val' must consist of two number values separated by a comma. If parsing fails and checked = 'false' returns null; otherwise throws an error.
+  
+  - Numbers must be within the valid range per `coord`
+  - Numbers cannot have a unit
+  - Negative numbers must be preceded by '-'
+  - Enclosing parentheses '( )' are optional
+  - Spaces, tabs, and any preceding non-digit characters are ignored
+  
+  Examples:
+  
+    parseCoord("-42,105")                >> C(-42, 105)
+    parseCoord("coord(40.689, -74.044)") >> C(40.689, -74.044)
+func
+overridable
+src:
+  (val, checked:true) => do
+    // Try block
+    try do
+      // Check for string
+      if (not val.isStr) throw "'val' must be a string."
+         
+      // Verify format: ignores preceding non-digits, whitespace, parens; handles negatives
+      // Try it out here: https://regex101.com/r/nXRx8d/1
+      regex: r"(?:[\D&&[^\-]]|\-\D)*(\-?\d+\.?\d*)\s*,\s*(\-?\d+\.?\d*)\)?\s*"
+      if (not reMatches(regex, val)) throw "Invalid format for 'val': \"" + val + "\""
+      
+      // Parse from groups
+      parts: reGroups(regex, val)
+      return coord(parseFloat(parts[1]), parseFloat(parts[2]))
+    
+    // Catch block
+    catch (ex) do
+      if (checked) throw (ex)
+      return null
+    end
+  end
+---
+name:parseDict
+doc:
+  Parse a `sys::Str` 'val' as a `haystack::Dict`. 'val' must be encoded as a valid `docHaystack::Zinc` dictionary. Because this function wraps `ioReadZinc`, it requires Zinc-style syntax rather than [Axon]`docHaxall::AxonLang` syntax for the following data types:
+  
+  - Null: 'N' instead of 'null'
+  - Boolean: 'T/F' instead of 'true/false'
+  
+  Also, ranges, triple-quoted string literals, and raw string literals are not supported.
+  
+  If parsing fails and 'checked' is 'false' returns null; otherwise throws an error.
+func
+overridable
+src:
+  (val, checked:true) => do
+    // Try block
+    try do
+      // Check input
+      if (not val.isStr) throw "'val' must a string."
+      if (val.contains("\n")) throw "'val' must not contain newline characters."
+      
+      // Trim
+      val = val.trim
+  
+      // Verify correct structure for a dict via regex
+      if (not(reMatches(r"\{.*\}", val))) do
+        throw "'val' must begin with \"{\" and end with \"}\"."
+      end
+  
+      // Parse using Zinc grammar
+      val = ioReadZinc("ver:\"3.0\"\nval\n" + val).first["val"]
+      
+      // Verify dict
+      if (not(val.isDict)) throw "'val' does not parse as a valid dict."
+      
+      // Return
+      return val
+      
+    // Catch block
+    catch (ex) do
+      if (checked) throw (ex)
+      return null
+    end
+  end
+---
+name:parseList
+doc:
+  Parse a `sys::Str` 'val' as a `sys::List`. 'val' must be encoded as a valid `docHaystack::Zinc` list. Because this function wraps `ioReadZinc`, it requires Zinc-style syntax rather than [Axon]`docHaxall::AxonLang` syntax for the following data types:
+  
+  - Null: 'N' instead of 'null'
+  - Boolean: 'T/F' instead of 'true/false'
+  
+  Also, ranges, triple-quoted string literals, and raw string literals are not supported.
+  
+  If parsing fails and 'checked' is 'false' returns null; otherwise throws an error.
+func
+overridable
+src:
+  (val, checked:true) => do
+    // Try block
+    try do
+      // Check input
+      if (not val.isStr) throw "'val' must a string."
+      if (val.contains("\n")) throw "'val' must not contain newline characters."
+      
+      // Trim
+      val = val.trim
+  
+      // Verify correct structure for a list via regex
+      if (not(reMatches(r"\[.*\]", val))) do
+        throw "'val' must begin with \"[\" and end with \"]\"."
+      end
+  
+      // Parse using Zinc grammar
+      val = ioReadZinc("ver:\"3.0\"\nval\n" + val).first["val"]
+      
+      // Verify dict
+      if (not(val.isList)) throw "'val' does not parse as a valid list."
+      
+      // Return
+      return val
+      
+    // Catch block
+    catch (ex) do
+      if (checked) throw (ex)
+      return null
+    end
+  end
 ---
 name:parseRef2
 func
 doc:
+  **Deprecated**; in SkySpark 3.1.2+, `parseRef` already strips leading "@".
+  
   Convenience wrapper for `parseRef` that supports leading "@" without throwing error.
 src:
   (val, checked:true) => do
+    logWarn(
+      {name:"nrelUtility", funcTrace:"parseRef2"},
+      "parseRef2() is deprecated and will be removed a future release."
+    )
     if (val.startsWith("@")) parseRef(val[1..-1], checked) else parseRef(val, checked)
   end
 ---
-name:removeNA
+name:product
+doc:"Fold multiple values into their numeric product. Return 'null' if no values."
 func
+overridable
+src:
+  (val, acc) => do 
+    // Start
+    if (val == foldStart()) do
+      return null
+  
+    // End
+    else if (val == foldEnd()) do
+      return acc
+    
+    // Skip null
+    else if (val == null) do
+      return acc
+  
+    // Accumulate
+    else if (acc == null) do
+      return val
+    else do
+      return val * acc
+    end
+  end
+---
+name:removeNA
 doc:
   Removes NA values from list or dict 'x'.
   
   Side effects: may rearrange dict key order.
-src:
-  (x) => x.findAll() v => v != na()
+func
+overridable
+src:"(x) => x.findAll() v => v != na()"
 ---
 name:removeNaN
-func
 doc:
   Removes NaN values from list or dict 'x'.
   
   Side effects: may rearrange dict key order.
-src:
-  (x) => x.findAll() v => not v.isNaN
+func
+overridable
+src:"(x) => x.findAll() v => not v.isNaN"
 ---
 name:removeNull
-func
 doc:
   Removes null values from list or dict 'x'.
   
   Side effects: may rearrange dict key order.
-src:
-  (x) => x.findAll() v => v != null
+func
+overridable
+src:"(x) => x.findAll() v => v != null"
 ---
 name:removeVal
-func
 doc:
   Remove any elements from list or dict 'x' that equal 'val'.
   
   Side effects: may rearrange dict key order.
-src:
-  (x, val) => x.findAll() v => v != val
+func
+overridable
+src:"(x, val) => x.findAll() v => v != val"
 ---
 name:rep
-func
 doc:
   Replicate the value 'x' the specified number of 'times'. Returns a list.
   
-  Examples
-  --------
+  Examples:
   
     rep(1, 2)               >> [1,1]
     rep("A", 3).concat("")  >> "AAA"
+func
+overridable
 src:
   (x, times) => do
     out: []
@@ -589,192 +1153,262 @@ src:
   end
 ---
 name:replace2
-func
 doc:
-  Convenience wrapper for `replace` that also allows processing of URIs or dicts.
+  Convenience wrapper for `replace` that also accepts uris, lists, and dicts.
   
   - If 'val' is a string, identical to `replace`
-  - If 'val' is a URI, it is coerced to string, modified, and re-parsed as a URI
-  - If 'val' is a dict or list, all its string and URI elements have the replacement applied 
+  - If 'val' is a uri, it is coerced to string, modified, and re-parsed as a uri
+  - If 'val' is a list or dict, all its string and uri elements have the replacement applied following the rules above
   
-  For dicts and lists, the string replacement is not recursive. (For instance, the replacement will
-  not reach inside of dicts nested within lists.)
+  For lists and dicts, the string replacement is recursive.
+  
+  Examples:
+  
+    "hello".replace2("hell", "t")            >> "to"
+    `io/funcs.txt`.replace2("txt", "trio")   >> `io/funcs.trio`
+    {a:["b","c"], d:`b`}.replace2("b", "x")  >> {a:["x","c"], d:`x`}
+func
+overridable
 src:
   (val, from, to) => do
-    // Convenience URI replacement function
+    // Convenience Uri replacement function
     replaceUri: (v, f, t) => v.toStr.replace(f, t).parseUri
-    
+  
     // String
     if (val.isStr) return val.replace(from, to)
-    
-    // URI
+  
+    // Uri
     if (val.isUri) return val.replaceUri(from, to)
-    
-    // Dict
+  
+    // Dict or List
     if (val.isDict or val.isList) do
-      return val.map() v => do
-        if (v.isStr) return v.replace(from, to)
-        if (v.isUri) return v.replaceUri(from, to)
-        v // Default
-      end
+      return val.map(v => replace2(v, from, to))
     end
   end
 ---
 name:rightJoin
-func
 doc:
-  Returns all rows from 'b' and all columns from 'a' and 'b'. Rows in 'b' with no match in 'a' will
-  have missing entries in the columns joined from 'a'. If there are multiple matches between 'a' and
-  'b', all combinations of the matches are returned.
+  Returns all rows from grid 'b' and all columns from grids 'a' and 'b'. Rows in 'b' with no match in 'a' will have missing entries in the columns joined from 'a'. If there are multiple matches between 'a' and 'b', all combinations of the matches are returned.
   
-  'rightJoin' is one of six SQL-style joins modeled on the two-table verbs in the
-  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
-  more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-nrelUtility::doc#joins`.
+  'rightJoin' is one of six SQL-style joins modeled on the two-table verbs in the [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the [join documentation]`ext-nrelUtility::doc#joins`.
+func
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
     if (a.isEmpty or b.isEmpty) return b
-
+  
     // Execute join
-    joinWithMethod("right", a, b, by, opts) 
-  end  
+    joinWithMethod("right", a, b, by, opts)
+  end
 ---
 name:semiJoin
-func
 doc:
-  Returns all rows from 'a' where there are matching values in 'b', keeping columns from 'a' only.
-  Differs from `innerJoin` in that it will never duplicate rows of 'a'.
+  Returns all rows from grid 'a' where there are matching values in grid 'b', keeping columns from 'a' only. Differs from `innerJoin` in that it will never duplicate rows of 'a'.
   
-  'semiJoin' is one of six SQL-style joins modeled on the two-table verbs in the
-  [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For
-  more information, including syntax for 'by' and valid options for 'opts', see the
-  [join documentation]`ext-nrelUtility::doc#joins`.
+  'semiJoin' is one of six SQL-style joins modeled on the two-table verbs in the [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the [join documentation]`ext-nrelUtility::doc#joins`.
+func
 src:
   (a, b, by:null, opts:{}) => do
     // Input check
     if (a.isEmpty) return a
     if (b.isEmpty) return [].toGrid
-
+  
     // Execute join
     joinWithMethod("semi", a, b, by, opts)
   end
 ---
 name:setDiff
-func
 doc:
   Returns the set difference of two lists or dicts 'a' and 'b': all elements of 'a' that are not in
   'b'.
   
   For dicts, elements for removal are checked by name only. Values are ignored, including for
   keys mapped to 'Remove.val'.
-
-  Examples
-  --------
+  
+  Examples:
   
     setDiff([1, 2, 3],[2, 3, 4])  >> [1]
     setDiff({a, b}, {a, c})       >> {b}
     setDiff({a, b:1}, {b:2})      >> {a}
     setDiff({a, b:1}, {-b})       >> {a}
+func
+overridable
 src:
   (a, b) => do
     // Lists
     if(a.isList and b.isList) do
       return a.findAll(v => not(b.contains(v))).unique
-    
+  
     // Dicts
     else if(a.isDict and b.isDict) do
       return a.findAll() (v, n) => not(b.has(n))
-    
+  
     // Other
     else do
       throw "Invalid arguments; need two lists or two dicts."
     end
   end
 ---
-name:stringToDict
+name:thisFiscalYear
+doc:"Returns a `haystack::DateSpan` for the current fiscal year. See `fiscalYear`."
 func
-doc:
-  Converts a string of comma-separated values to a dict using `eval`. Automatically adds brackets
-  '{' '}' if needed.
-src:
-  (s) => do
-    // Trim whitespace
-    s = s.trim
-    
-    // Handle brackets
-    if (not s.startsWith("{")) s = "{" + s
-    if (not s.endsWith("}")) s = s + "}"
-
-    // Eval
-    eval(s)
-  end
+overridable
+src:"() => fiscalYear(today(),0)"
 ---
-name:stringToList
+name:toDayList
+doc:"Return a list of type `haystack::DateSpan` representing the set of whole days for date/time range 'span'. If 'clip == true', the first and last days are converted to `haystack::Span` and clipped to the beginning and end of 'span', respectively."
 func
-doc:
-  Converts a string of comma-separated values to a list using `eval`. Automatically adds brackets
-  '[' ']' if needed.
+overridable
 src:
-  (s) => do
-    // Trim whitespace
-    s = s.trim
-    
-    // Handle brackets
-    if (not s.startsWith("[")) s = "[" + s
-    if (not s.endsWith("]")) s = s + "]"
+  (span, clip:false) => do
+    // Coerce to span
+    span = span.toSpan
   
-    // Eval
-    eval(s)
+    // Generate consecutive days
+    days: []
+    span.eachDay() d => days = days.add(d.toSpan)
+  
+    // Clip?
+    if (clip) do
+      // Clip start
+      days = days.remove(0).insert(0, (span.start)..(days[0].end))
+  
+      // Clip end
+      days = days.remove(-1).add((days[-1].start)..(span.end))
+    end
+  
+    // Return
+    days
   end
 ---
-name:testJoin
+name:toFiscalYearList
+doc:"Return a list of type `haystack::DateSpan` representing the set of whole fiscal years for date/time range 'span'. If 'clip == true', the first and last fiscal years are converted to `haystack::Span` and clipped to the beginning and end of 'span', respectively. See also `fiscalYear`."
 func
-nodoc
+overridable
 src:
-  // Test harnass for *Join functions
-  (expression) => do
-    // Test grids
-    a: [{name:"Bob",  age:63 , hometown:"Chicago", state:"IL"},
-        {name:"Jane", age:41 , hometown:"New York", state:"NY"},
-        {name:"Nico", age:25 , hometown:"Portland", state:"ME"}].toGrid
-
-    b: [{hometown:"New York", state:"NY", population:8175133},
-        {hometown:"Denver",   state:"CO", population:600158},
-        {hometown:"Portland", state:"OR", population:583776},
-        {hometown:"Portland", state:"ME", population:66093}].toGrid
-    
-    // Column order
-    a = a.reorderCols(["name","age","hometown","state"])
-    b = b.reorderCols(["hometown","state","population"])  
-    
-    // Simple test joins
-    if (expression == "left")  return leftJoin(a, b)
-    if (expression == "right") return rightJoin(a, b)
-    if (expression == "inner") return innerJoin(a, b)
-    if (expression == "outer") return outerJoin(a, b)
-    if (expression == "full")  return fullJoin(a, b)
-    if (expression == "semi")  return semiJoin(a, b)
-    if (expression == "anti")  return antiJoin(a, b)
-    
-    // More complex join; use form: (a, b) => *Join(a, b, ...)
-    f: expression.eval
-    f(a, b)
+  (span, clip:false) => do
+    // Coerce to span
+    span = span.toSpan
+  
+    // Starting and ending fiscal years
+    startYear: fiscalYear(span.start).end.year
+    endYear:   fiscalYear(span.end).end.year
+  
+    // Generate consecutive fiscal years
+    years: (startYear..endYear)
+      .map(y => fiscalYear(y).toSpan)
+      .findAll(v => v.start < span.end)
+  
+    // Clip?
+    if (clip) do
+      // Clip start
+      years = years.remove(0).insert(0, (span.start)..(years[0].end))
+  
+      // Clip end
+      years = years.remove(-1).add((years[-1].start)..(span.end))
+    end
+  
+    // Return
+    years
+  end
+---
+name:toMonthList
+doc:"Return a list of type `haystack::DateSpan` representing the set of whole months for date/time range 'span'. If 'clip == true', the first and last months are converted to `haystack::Span` and clipped to the beginning and end of 'span', respectively."
+func
+overridable
+src:
+  (span, clip:false) => do
+    // Coerce to span
+    span = span.toSpan
+  
+    // Generate consecutive months
+    months: []
+    span.eachMonth() m => months = months.add(m.toSpan)
+  
+    // Clip?
+    if (clip) do
+      // Clip start
+      months = months.remove(0).insert(0, (span.start)..(months[0].end))
+  
+      // Clip end
+      months = months.remove(-1).add((months[-1].start)..(span.end))
+    end
+  
+    // Return
+    months
+  end
+---
+name:toWeekList
+doc:"Return a list of type `haystack::DateSpan` representing the set of whole weeks for date/time range 'span'. Weeks begin on the weekday returned by `startOfWeek`. If 'clip == true', the first and last weeks are converted to `haystack::Span` and clipped to the beginning and end of 'span', respectively."
+func
+overridable
+src:
+  (span, clip:false) => do
+    // Coerce to span
+    span = span.toSpan
+  
+    // Adjustment to start of the week
+    adjust: weekday(span.start) - startOfWeek()
+    if (adjust < 0) adjust = adjust + 7
+    startDate: span.start.date - adjust
+  
+    // Generate consecutive weeks
+    weeks: hisSlidingWindows(startDate..(span.end), 0day, 7day)
+      .hisFindAll((val, ts) => ts < span.end)
+      .toRecList
+      .map(row => (row->ts)..(row->ts + 7day))
+  
+    // Clip?
+    if (clip) do
+      // Clip start
+      weeks = weeks.remove(0).insert(0, (span.start)..(weeks[0].end))
+  
+      // Clip end
+      weeks = weeks.remove(-1).add((weeks[-1].start)..(span.end))
+    end
+  
+    // Return
+    weeks
+  end
+---
+name:toYearList
+doc:"Return a list of type `haystack::DateSpan` representing the set of whole years for date/time range 'span'. Years begin on January 1. If 'clip == true', the first and last years are converted to `haystack::Span` and clipped to the beginning and end of 'span', respectively."
+func
+overridable
+src:
+  (span, clip:false) => do
+    // Coerce to span
+    span = span.toSpan
+  
+    // Generate consecutive years
+    years: ((span.start.year)..(span.end.year))
+      .map(y => toSpan(date(y, 1, 1)..date(y, 12, 31)))
+      .findAll(v => v.start < span.end)
+  
+    // Clip?
+    if (clip) do
+      // Clip start
+      years = years.remove(0).insert(0, (span.start)..(years[0].end))
+  
+      // Clip end
+      years = years.remove(-1).add((years[-1].start)..(span.end))
+    end
+  
+    // Return
+    years
   end
 ---
 name:union
-func
 doc:
   Returns the set union of two lists or dicts 'a' and 'b'. Behavior for dicts differs by
   'checked':
   
-  - If 'checked' is *true*, verifies that keys included in both 'a' and 'b' have matching values,
+  - If 'checked == true', verifies that keys included in both 'a' and 'b' have matching values,
     and throws an error on mismatch.
-  - If 'checked' is *false*, values from 'a' override values from 'b'. This is similar to
+  - If 'checked == false', values from 'a' override values from 'b'. This is similar to
     'merge(b, a)' except that keys not mapped to 'Remove.val' always take precedence.
-
-  Examples
-  --------
+  
+  Examples:
   
     union([1, 2, 3],[2, 3, 4])        >> [1, 2, 3, 4]
     union({a, b}, {a, c})             >> {a, b, c}
@@ -782,12 +1416,14 @@ doc:
     union({a, b:1}, {a, b:1})         >> {a, b:1}
     union({a, b:1}, {a, b:2})         >> error
     union({a, b:1}, {a, b:2}, false)  >> {a, b:1}
+func
+overridable
 src:
   (a, b, checked:true) => do
     // Lists
     if(a.isList and b.isList) do
       return a.addAll(b).unique
-    
+  
     // Dicts
     else if(a.isDict and b.isDict) do
       // Value matching
@@ -796,10 +1432,10 @@ src:
           if (a.has(n) and a[n] != b[n]) throw "Values do not match for key \"" + n + "\"."
         end
       end
-      
+  
       // Merge, without dropping values
       return merge(merge(a, b), merge(b, a))
-    
+  
     // Other
     else do
       throw "Invalid arguments; need two lists or two dicts."

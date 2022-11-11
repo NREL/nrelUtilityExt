@@ -455,12 +455,12 @@ src:
     // Log warning for functions with no name
     if (noName > 1 and opts->warn) do
       logWarn(
-        {name:"nrelUtility", funcTrace:"importFuncs"},
+        {name:"nrelUtility", funcTrace:"importFunctions"},
         noName + " functions without a 'name' tag were dropped."
       )
     else if (noName == 1 and opts->warn) do    
       logWarn(
-        {name:"nrelUtility", funcTrace:"importFuncs"},
+        {name:"nrelUtility", funcTrace:"importFunctions"},
         noName + " function without a 'name' tag was dropped."
       )
     end
@@ -468,12 +468,12 @@ src:
     // Log warning for functions with no source
     if (noSrc > 1 and opts->warn) do
       logWarn(
-        {name:"nrelUtility", funcTrace:"importFuncs"},
+        {name:"nrelUtility", funcTrace:"importFunctions"},
         noSrc + " functions without a 'src' tag were dropped."
       )
     else if (noName == 1 and opts->warn) do    
       logWarn(
-        {name:"nrelUtility", funcTrace:"importFuncs"},
+        {name:"nrelUtility", funcTrace:"importFunctions"},
         noSrc + " function without a 'src' tag was dropped."
       )
     end

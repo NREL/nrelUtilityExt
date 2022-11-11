@@ -10,6 +10,10 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 
 [View Changes](https://github.com/NREL/nrelUtilityExt/compare/main...develop)
 
+### Fixed
+
+- Corrected function name in `importFunctions()` logged warnings
+
 ## [v2.0.0] (2022-11-06)
 
 [v2.0.0]: https://github.com/NREL/nrelUtilityExt/releases/tag/v2.0.0

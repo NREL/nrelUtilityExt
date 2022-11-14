@@ -455,12 +455,12 @@ src:
     // Log warning for functions with no name
     if (noName > 1 and opts->warn) do
       logWarn(
-        {name:"nrelUtility", funcTrace:"importFuncs"},
+        {name:"nrelUtility", funcTrace:"importFunctions"},
         noName + " functions without a 'name' tag were dropped."
       )
     else if (noName == 1 and opts->warn) do    
       logWarn(
-        {name:"nrelUtility", funcTrace:"importFuncs"},
+        {name:"nrelUtility", funcTrace:"importFunctions"},
         noName + " function without a 'name' tag was dropped."
       )
     end
@@ -468,12 +468,12 @@ src:
     // Log warning for functions with no source
     if (noSrc > 1 and opts->warn) do
       logWarn(
-        {name:"nrelUtility", funcTrace:"importFuncs"},
+        {name:"nrelUtility", funcTrace:"importFunctions"},
         noSrc + " functions without a 'src' tag were dropped."
       )
     else if (noName == 1 and opts->warn) do    
       logWarn(
-        {name:"nrelUtility", funcTrace:"importFuncs"},
+        {name:"nrelUtility", funcTrace:"importFunctions"},
         noSrc + " function without a 'src' tag was dropped."
       )
     end
@@ -1073,6 +1073,23 @@ src:
     if (val.startsWith("@")) parseRef(val[1..-1], checked) else parseRef(val, checked)
   end
 ---
+name:pathToUri
+doc:
+  Convert a list of Str to a Uri. Use empty strings at the beginning or end to add leading or trailing slashes, respectively. See also `uriPlusSlash` to add a trailing slash.
+  
+    ["io", "fileToImport.trio"].pathToUri       >> `io/fileToImport.trio`
+    ["", "proj", "myProj", "io", ""].pathToUri  >> `/proj/myProj/io/`
+func
+overridable
+src:
+  (path) => do
+    // Ensure list
+    path = path.toList
+    
+    // Concatenate with "/" and convert to Uri
+    path.concat("/").parseUri
+  end
+---
 name:product
 doc:"Fold multiple values into their numeric product. Return 'null' if no values."
 func
@@ -1397,6 +1414,12 @@ src:
     // Return
     years
   end
+---
+name:tomorrow
+doc:"Return tomorrow's Date according to context's time zone"
+func
+overridable
+src:"() => today() + 1day"
 ---
 name:union
 doc:

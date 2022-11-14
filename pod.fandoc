@@ -1,8 +1,7 @@
 Overview [#over]
 ****************
 
-The NREL Utility extension provides a variety of missing utility functions for the Axon
-programming language. Most functions are `overridable`.
+The NREL Utility extension provides a variety of missing utility functions for the Axon programming language. Most functions are `overridable`. See the **nrelUtilityExt** [Github repository]`https://github.com/NREL/nrelUtilityExt/` for important [release notes]`https://github.com/NREL/nrelUtilityExt/releases` and a [change log]`https://github.com/NREL/nrelUtilityExt/blob/main/CHANGELOG.md`. Please report issues [here]`https://github.com/NREL/nrelUtilityExt/issues`.
 
 Set Operations [#setops]
 ************************
@@ -253,7 +252,6 @@ A brief sampling of other useful functions:
 - `isNA` complements `isNull`, `isNaN`, and the various other core 'is*' funtions
 - `removeNA`, `removeNaN`, `removeNull`, and `removeVal` remove NAs, NaNs, nulls, or specific values
   from a list or dict
+- `tomorrow` complements `today` and `yesterday`
   
 For a complete list, see [the function listing]`ext-nrelUtility::index`.
-For a change log, see the [nrelUtilityExt]`https://github.com/NREL/nrelUtilityExt/blob/main/CHANGELOG.md`
-repository on GitHub.

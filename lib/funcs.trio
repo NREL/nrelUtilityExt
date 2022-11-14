@@ -1073,6 +1073,22 @@ src:
     if (val.startsWith("@")) parseRef(val[1..-1], checked) else parseRef(val, checked)
   end
 ---
+name:pathToUri
+doc:
+  Convert a list of Str to a Uri. Use empty strings at the beginning or end to add leading or trailing slashes, respectively. See also `uriPlusSlash` to add a trailing slash.
+  
+    ["io", "fileToImport.trio"].pathToUri          >> `io/fileToImport.trio`
+    ["", "proj", "myProject", "io", ""].pathToUri  >> `/proj/myProj/io/
+func
+src:
+  (path) => do
+    // Ensure list
+    path = path.toList
+    
+    // Concatenate with "/" and convert to Uri
+    path.concat("/").parseUri
+  end
+---
 name:product
 doc:"Fold multiple values into their numeric product. Return 'null' if no values."
 func

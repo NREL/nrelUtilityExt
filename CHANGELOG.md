@@ -17,6 +17,7 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 ### Added
 
 - `tomorrow` returns tomorrow's date
+- `pathToUri` converts a list of strings to a Uri
 
 ## [v2.0.0] (2022-11-06)
 

@@ -1077,8 +1077,8 @@ name:pathToUri
 doc:
   Convert a list of Str to a Uri. Use empty strings at the beginning or end to add leading or trailing slashes, respectively. See also `uriPlusSlash` to add a trailing slash.
   
-    ["io", "fileToImport.trio"].pathToUri          >> `io/fileToImport.trio`
-    ["", "proj", "myProject", "io", ""].pathToUri  >> `/proj/myProj/io/
+    ["io", "fileToImport.trio"].pathToUri       >> `io/fileToImport.trio`
+    ["", "proj", "myProj", "io", ""].pathToUri  >> `/proj/myProj/io/
 func
 overridable
 src:

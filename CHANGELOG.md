@@ -14,6 +14,8 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 
 [v2.1.0]: https://github.com/NREL/nrelUtilityExt/releases/tag/v2.1.0
 
+[View Changes](https://github.com/NREL/nrelUtilityExt/compare/v2.0.0...v2.1.0)
+
 ### Fixed
 
 - Corrected function name in `importFunctions()` logged warnings

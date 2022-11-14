@@ -1080,6 +1080,7 @@ doc:
     ["io", "fileToImport.trio"].pathToUri          >> `io/fileToImport.trio`
     ["", "proj", "myProject", "io", ""].pathToUri  >> `/proj/myProj/io/
 func
+overridable
 src:
   (path) => do
     // Ensure list
@@ -1357,6 +1358,7 @@ src:
 name:tomorrow
 doc:"Return tomorrow's Date according to context's time zone"
 func
+overridable
 src:"() => today() + 1day"
 ---
 name:toWeekList

@@ -252,5 +252,6 @@ A brief sampling of other useful functions:
 - `isNA` complements `isNull`, `isNaN`, and the various other core 'is*' funtions
 - `removeNA`, `removeNaN`, `removeNull`, and `removeVal` remove NAs, NaNs, nulls, or specific values
   from a list or dict
+- `tomorrow` complements `today` and `yesterday`
   
 For a complete list, see [the function listing]`ext-nrelUtility::index`.

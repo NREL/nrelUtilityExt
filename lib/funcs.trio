@@ -1338,6 +1338,11 @@ src:
     months
   end
 ---
+name:tomorrow
+doc:"Return tomorrow's Date according to context's time zone"
+func
+src:"() => today() + 1day"
+---
 name:toWeekList
 doc:"Return a list of type `haystack::DateSpan` representing the set of whole weeks for date/time range 'span'. Weeks begin on the weekday returned by `startOfWeek`. If 'clip == true', the first and last weeks are converted to `haystack::Span` and clipped to the beginning and end of 'span', respectively."
 func

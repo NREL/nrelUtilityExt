@@ -14,6 +14,10 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 
 - Corrected function name in `importFunctions()` logged warnings
 
+### Added
+
+- `tomorrow` returns tomorrow's date
+
 ## [v2.0.0] (2022-11-06)
 
 [v2.0.0]: https://github.com/NREL/nrelUtilityExt/releases/tag/v2.0.0

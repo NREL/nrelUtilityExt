@@ -889,7 +889,7 @@ doc:
   Parse a `sys::Str` 'val', automatically guessing its data type. Supports all `docHaystack::Zinc` data types plus the following keywords:
   
   - True: 'true', 'True', or 'TRUE' (as Bool)
-  - False: 'false, 'False', or 'FALSE' (as Bool)
+  - False: 'false', 'False', or 'FALSE' (as Bool)
   - Null: 'null', 'Null', or 'NULL'
   - NA: 'na', 'Na', or 'NA'
   - Not a Number (NaN): 'nan', 'NaN', or 'NAN'

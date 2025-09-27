@@ -14,7 +14,7 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 
 - `isMarker()` and `isRemove()` return whether an object is a marker or the
   remove singleton, respectively
-
+- `keep()` keeps only the specified items from a collection.
 
 ### Changed
 

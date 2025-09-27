@@ -9,7 +9,8 @@ Collection Functions [#collections]
 Functions to analyze and manipulate collections (i.e. lists and dicts):
 
 - `in` complements `contains`.
-- `hasAny` and `hasAll` are extensions of `has` to multiple keys.
+- `hasAny` and `hasAll` extend `has` to multiple keys.
+- `keep` is the equivalent of `keepCols` for lists and dicts.
 - `removeNA`, `removeNaN`, `removeNull`, and `removeVal` remove NAs, NaNs,
   nulls, or specific values from a list or dict.
 - `rep` repeats a value to create a list.

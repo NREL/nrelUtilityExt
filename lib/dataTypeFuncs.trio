@@ -1,0 +1,5 @@
+name:isNA
+doc:"Returns 'true' if 'val' equals `haystack::NA`, 'false' otherwise."
+func
+overridable
+src:"(val) => val == na()"

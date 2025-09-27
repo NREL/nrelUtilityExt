@@ -10,6 +10,10 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 
 [View Changes](https://github.com/NREL/nrelUtilityExt/compare/main...develop)
 
+### Changed
+
+- Reorganized functions into multiple package files for easier maintenance
+
 ## [v2.1.0] (2022-11-13)
 
 [v2.1.0]: https://github.com/NREL/nrelUtilityExt/releases/tag/v2.1.0

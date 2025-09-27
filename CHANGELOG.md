@@ -10,10 +10,17 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 
 [View Changes](https://github.com/NREL/nrelUtilityExt/compare/main...develop)
 
+### Added
+
+- `isMarker()` and `isRemove()` return whether an object is a marker or the
+  remove singleton, respectively
+
+
 ### Changed
 
 - Reorganized functions into multiple package files for easier maintenance
 - Reorganized documentation to group more functions by category
+- Miscellaneous function documentation improvements
 
 ### Removed
 

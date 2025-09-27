@@ -230,6 +230,8 @@ Type Checking Functions [#typechecking]
 
 Additional 'is*' funtions that check for specific data types:
 
+- `isMarker`
+- `isRemove`
 - `isNA`
 
 Date Range Functions [#daterange]

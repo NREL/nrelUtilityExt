@@ -1,0 +1,16 @@
+/// Automated tests to implement in the future ///
+
+// is* //
+d: {a, -b, c:na()}
+
+isMarker(d->a)  // True
+isMarker(d->b)  // False
+isMarker(d->c)  // False
+
+isRemove(d->a)  // False
+isRemove(d->b)  // True
+isRemove(d->c)  // False
+
+isNA(d->a)  // False
+isNA(d->b)  // False
+isNA(d->c)  // True

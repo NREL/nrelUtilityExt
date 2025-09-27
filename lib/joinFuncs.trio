@@ -1,0 +1,317 @@
+name:antiJoin
+doc:
+  Returns all rows from grid 'a' where there are *not* matching values in grid 'b', keeping columns from 'a' only.
+  
+  'antiJoin' is one of six SQL-style joins modeled on the two-table verbs in the [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the [join documentation]`ext-nrelUtility::doc#joins`.
+func
+src:
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty or b.isEmpty) return a
+  
+    // Execute join
+    joinWithMethod("anti", a, b, by, opts)
+  end
+---
+name:fullJoin
+doc:
+  Returns all rows and columns from grids 'a' and 'b'. Rows in 'a' with no match in 'b' will have missing entries in the columns joined from 'b', and vice versa.
+  
+  'fullJoin' is one of six SQL-style joins modeled on the two-table verbs in the [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the [join documentation]`ext-nrelUtility::doc#joins`.
+func
+src:
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty) return b
+    if (b.isEmpty) return a
+  
+    // Execute join
+    joinWithMethod("full", a, b, by, opts)
+  end
+---
+name:innerJoin
+doc:
+  Returns all rows from grid 'a' where there are matching values in grid 'b' combining all columns from 'a' and 'b'. If there are multiple matches between 'a' and 'b', all combinations of the matches are returned.
+  
+  'innerJoin' is one of six SQL-style joins modeled on the two-table verbs in the   [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the
+  [join documentation]`ext-nrelUtility::doc#joins`.
+func
+src:
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty or b.isEmpty) return [].toGrid
+  
+    // Execute join
+    joinWithMethod("inner", a, b, by, opts)
+  end
+---
+name:joinWithMethod
+doc:"Core implementation of '*Join()' functions. Not intended to be used directly."
+func
+src:
+  (method, a, b, by, opts) => do
+  
+    //// Options ///////////////////////////////////////////////////////////////////////////////////
+  
+    // Option type checking
+    if (not(opts.isDict)) throw "'opts' must be a dict."
+  
+    // Method
+    method = method.lower
+  
+    // Merge defaults
+    opts = {keep:"both", suffix:{a:"a", b:"b"}}.merge(opts)
+  
+    // Sanitize 'keep' option
+    opts = opts.set("keep", opts->keep.lower)
+    if (not(opts["keep"].in(["a", "b", "both", "neither", "drop", "na"]))) do
+      throw "Option 'keep' must be one of: a, b, both, neither, drop, na"
+    end
+    if (opts["keep"] == "drop") opts = opts.set("keep", "neither")
+    if (method.in(["semi","anti"])) opts = opts.set("keep", "a") // Override for antiJoin, semiJoin
+  
+    // Sanitize 'suffix' option
+    if (opts["suffix"].isList) do
+      if (opts->suffix.size < 2) throw "List for option 'suffix' must have two elements."
+      opts = opts.set("suffix", {a:opts->suffix[0], b:opts->suffix[1]})
+    end else if (opts["suffix"].isDict) do
+      if (not(opts->suffix.hasAll(["a","b"]))) do
+        throw "Dict for option 'suffix' must have named elements \"a\" and \"b\"."
+      end
+      opts = opts.set("suffix", opts->suffix.map(v => v.toStr.toTagName))
+    end else do
+      throw "Option 'suffix' must be a list or dict."
+    end
+  
+    //// Join Columns //////////////////////////////////////////////////////////////////////////////
+  
+    // Null: Natural join
+    if (by == null) do
+      by = intersect(colNames(a),colNames(b))
+    end
+  
+    // String: Single column
+    if (by.isStr) do
+      by = {}.set(by, by)
+    end
+  
+    // List: Multiple columns with same name
+    if (by.isList) do
+      by.each() v => do
+        if (not(v.isStr)) throw "Each element of 'by' must be a string."
+      end
+      newBy: {}
+      by.each() v => newBy = newBy.set(v, v)
+      by = newBy
+    end
+  
+    // Dict: Multiple columns with same or different names
+    if (by.isDict) do
+      by.each() v => do
+        if (not(v.isStr)) throw "Each element of 'by' must be a string."
+      end
+  
+    // Other: Error
+    else do
+      throw "If specified, 'by' must be a string, list, or dict containing valid column names."
+    end
+  
+    // Check results
+    by.each() (v, n) => do
+      if (a.missing(n)) throw "Column \"" + n + "\" is missing from grid 'a'."
+      if (b.missing(v)) throw "Column \"" + v + "\" is missing from grid 'b'."
+    end
+  
+    // Key names = grid A columns, key values = grid B columns
+  
+    //// Merge Action Function /////////////////////////////////////////////////////////////////////
+  
+    joinMerge: (rowA, rowB, overlap, keep) => do
+      // On conflict: keep A
+      if (keep == "a") return merge(rowB, rowA)
+  
+      // On conflict: keep B
+      if (keep == "b") return merge(rowA, rowB)
+  
+      // On conflict: keep both (columns already renamed)
+      if (keep == "both") return merge(rowB, rowA)
+  
+      // Find conflicts
+      conflict: overlap.findAll() n => rowA.has(n) and rowB.has(n) and rowA[n] != rowB[n]
+  
+      // On conflict: drop
+      if (keep == "neither") do
+        return merge(rowB, rowA).map((v, n) => if (n.in(conflict)) null else v)
+      end
+  
+      // On conflict: convert to NA
+      if (keep == "na") do
+        return merge(rowB, rowA).map((v, n) => if (n.in(conflict)) na() else v)
+      end
+    end
+  
+    //// Setup /////////////////////////////////////////////////////////////////////////////////////
+  
+    // Initialize output grid
+    out: {}.toGrid
+  
+    // Check for conflicts (Left, Right, Inner, and Full joins only)
+    if (method.in(["left", "right", "inner", "full"])) do
+      // Overlapping columns (possible sources of conflicts)
+      overlap: intersect(
+        colNames(a).setDiff(names(by)),
+        colNames(b).setDiff(vals(by))
+      )
+  
+      // Preemptive column renaming
+      if (opts->keep == "both") do
+        overlap.each() n => do
+          a = a.renameCol(n, n + "_" + opts->suffix->a)
+          b = b.renameCol(n, n + "_" + opts->suffix->b)
+        end
+      end
+    end
+  
+    //// Perform Join //////////////////////////////////////////////////////////////////////////////
+  
+    // LEFT, INNER, FULL (Common and A-unique rows)
+    if (method.in(["left", "inner", "full"])) do
+  
+      // Iterate on rows of A
+      a.each() rowA => do
+        // Find matches in B
+        match: b.findAll() rowB => do
+          by.all() (colB, colA) => rowA[colA] == rowB[colB]
+        end
+  
+        // No matches
+        if (match.isEmpty) do
+          if (method.lower == "inner") do
+            return null // INNER
+          else do
+            out = out.addRow(rowA) // LEFT, FULL
+          end
+  
+        // Matches
+        else do
+          out = out.addRows(
+            // Merge rows
+            match.map() rowB => joinMerge(rowA, rowB, overlap, opts->keep)
+          )
+        end
+      end
+  
+    end
+  
+    // RIGHT, FULL (B-unique rows)
+    if (method.in(["right", "full"])) do
+  
+      // Iterate rows of B
+      b.each() rowB => do
+        // Find matches in A
+        match: a.findAll() rowA => do
+          by.all() (colB, colA) => rowA[colA] == rowB[colB]
+        end
+  
+        // No matches
+        if (match.isEmpty) do
+          out = out.addRow(rowB) // RIGHT, FULL
+  
+        // Matches
+        else if (method.lower == "right") do
+          // RIGHT
+          out = out.addRows(
+            // Merge rows
+            match.map() rowA => joinMerge(rowA, rowB, overlap, opts->keep)
+          )
+        end
+      end
+  
+    end
+  
+    // SEMI, ANTI
+    if (method.in(["semi","anti"])) do
+  
+      // Iterate on rows of A
+      a.each() rowA => do
+        // Check for matches in B
+        match: b.find() rowB => by.all() (colB, colA) => rowA[colA] == rowB[colB]
+  
+        // SEMI
+        if (match != null and method.lower == "semi") out = out.addRow(rowA)
+  
+        // ANTI
+        if (match == null and method.lower == "anti") out = out.addRow(rowA)
+      end
+  
+    end
+  
+    //// Metadata //////////////////////////////////////////////////////////////////////////////////
+  
+    // To Do: Handle merging of grid and column metadata
+  
+    //// Post-Processing ///////////////////////////////////////////////////////////////////////////
+  
+    // Fix column order
+    if (method.in(["left", "right", "inner", "full"])) do
+      // A + B
+      colOrder: union(colNames(a),colNames(b)).intersect(colNames(out))
+    else if (method.in(["semi","anti"])) do
+      // A only
+      colOrder: colNames(a).intersect(colNames(out))
+    end
+  
+    // Enforce unique entries, restore column order and return
+    return out.unique(colOrder).reorderCols(colOrder)
+  end
+---
+name:leftJoin
+doc:
+  Returns all rows from grid 'a' and all columns from grids 'a' and 'b'. Rows in 'a' with no match in 'b' will have missing entries in the columns joined from 'b'. If there are multiple matches between 'a' and 'b', all combinations of the matches are returned.
+  
+  'leftJoin' is one of six SQL-style joins modeled on the two-table verbs in the [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the [join documentation]`ext-nrelUtility::doc#joins`.
+func
+src:
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty or b.isEmpty) return a
+  
+    // Execute join
+    joinWithMethod("left", a, b, by, opts)
+  end
+---
+name:outerJoin
+doc:"Alias for `fullJoin`."
+func
+src:"(a, b, by:null, opts:{}) => fullJoin(a, b, by, opts)"
+---
+name:rightJoin
+doc:
+  Returns all rows from grid 'b' and all columns from grids 'a' and 'b'. Rows in 'b' with no match in 'a' will have missing entries in the columns joined from 'a'. If there are multiple matches between 'a' and 'b', all combinations of the matches are returned.
+  
+  'rightJoin' is one of six SQL-style joins modeled on the two-table verbs in the [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the [join documentation]`ext-nrelUtility::doc#joins`.
+func
+src:
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty or b.isEmpty) return b
+  
+    // Execute join
+    joinWithMethod("right", a, b, by, opts)
+  end
+---
+name:semiJoin
+doc:
+  Returns all rows from grid 'a' where there are matching values in grid 'b', keeping columns from 'a' only. Differs from `innerJoin` in that it will never duplicate rows of 'a'.
+  
+  'semiJoin' is one of six SQL-style joins modeled on the two-table verbs in the [dplyr]`https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html` R package. For more information, including syntax for 'by' and valid options for 'opts', see the [join documentation]`ext-nrelUtility::doc#joins`.
+func
+src:
+  (a, b, by:null, opts:{}) => do
+    // Input check
+    if (a.isEmpty) return a
+    if (b.isEmpty) return [].toGrid
+  
+    // Execute join
+    joinWithMethod("semi", a, b, by, opts)
+  end

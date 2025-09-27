@@ -1,0 +1,307 @@
+name:dictToFilter
+doc:
+  Transforms dict 'd' into a string compatible with `parseFilter`. The resulting filter string matches records with tags that include all the name-value pairs in 'd'.
+  
+  Notes
+  -----
+  
+  1. Handles any axon data type supported by `toAxonCode`. However, data types without an Axon literal (e.g. dateTimes) may cause downstream functions such as `parseFilter` to fail.
+  2. Dicts that contain reserved keywords as names, such as "return", will not throw an error but may cause downstream functions such as `parseFilter` to fail.
+  3. Null values in 'd' are removed.
+func
+overridable
+src:
+  (d) => do
+    // Remove nulls
+    d = d.removeNull
+    
+    // Map dict vals to axon code for filter
+    d = d.map() (v, n) => do
+      // Name
+      if (v == marker()) do
+        return n
+        
+      // Name-Value
+      else do
+        return n + "==" + v.toAxonCode
+      end
+    end
+    
+    // Collect, concatenate, and return
+    d.vals.concat(" and ")
+  end
+---
+name:hasAll
+doc:
+  Returns 'true' if 'x' has all the elements in 'names'.
+  
+  - For dicts, search by key names
+  - For grids, search by column names
+func
+overridable
+src:
+  (x, names) => do
+    // Ensure names is a list
+    if (not(names.isList)) throw "'names' must be a list of strings."
+  
+    // On any missing name, return false
+    if (x.isGrid) do
+      out: names.eachWhile() n => if (n.in(x.colNames)) null else false
+  
+    else if (x.isDict) do
+      out: names.eachWhile() n => if (x.has(n)) null else false
+  
+    else do
+      throw "'x' must be a dict or grid."
+    end
+  
+    // Return: null => true, false => false
+    if (out == null) return true else return false
+  end
+---
+name:hasAny
+doc:
+  Returns 'true' if 'x' has any of the elements in 'names'.
+  
+  - For dicts, search by key names
+  - For grids, search by column names
+func
+overridable
+src:
+  (x, names) => do
+    // Ensure names is a list
+    if (not(names.isList)) throw "'names' must be a list of strings."
+  
+    // On any matched name, return true
+    if (x.isGrid) do
+      out: names.eachWhile() n => if (n.in(x.colNames)) true else null
+  
+    else if (x.isDict) do
+      out: names.eachWhile() n => if (x.has(n)) true else null
+  
+    else do
+      throw "'x' must be a dict or grid."
+    end
+  
+    // Return: true => true, null => false
+    if (out == null) return false else return true
+  end
+---
+name:in
+doc:"Convenience for 'b.contains(a)'; see `contains`."
+func
+overridable
+src:"(a, b) => b.contains(a)"
+---
+name:intersect
+doc:
+  Returns the set intersection of two lists or dicts 'a' and 'b'. Behavior for dicts differs by
+  'checked':
+  
+  - If 'checked == true', verifies that keys included in both 'a' and 'b' have matching values,
+    and throws an error on mismatch.
+  - If 'checked == false', excludes name-value pairs with matching keys but differing values.
+  
+  Examples:
+  
+    intersect([1, 2, 3],[2, 3, 4])        >> [2, 3]
+    intersect({a, b}, {a, c})             >> {a}
+    intersect({a, b:1}, {a, b:1})         >> {a, b:1}
+    intersect({a, b:1}, {a, b:2})         >> error
+    intersect({a, b:1}, {a, b:2}, false)  >> {a}
+func
+overridable
+src:
+  (a, b, checked:true) => do
+    // Lists
+    if(a.isList and b.isList) do
+      return a.findAll(v => b.contains(v)).unique
+  
+    // Dicts
+    else if(a.isDict and b.isDict) do
+      // Common names
+      cn: a.names.findAll() n => b.names.contains(n)
+  
+      // Filter
+      a = a.findAll() (v, n) => cn.contains(n)
+  
+      // Value matching
+      if (checked) do
+        // Values must match
+        a.each() (v, n) => if (b[n] != v) throw "Values do not match for key \"" + n + "\"."
+      end else do
+        // Discard keys with mismatched values
+        a.each() (v, n) => if (b[n] != v) a = a.remove(n)
+      end
+  
+      // Return
+      return a
+  
+    // Other
+    else do
+      throw "Invalid arguments; need two lists or two dicts."
+    end
+  end
+---
+name:removeNA
+doc:
+  Removes NA values from list or dict 'x'.
+  
+  Side effects: may rearrange dict key order.
+func
+overridable
+src:"(x) => x.findAll() v => v != na()"
+---
+name:removeNaN
+doc:
+  Removes NaN values from list or dict 'x'.
+  
+  Side effects: may rearrange dict key order.
+func
+overridable
+src:"(x) => x.findAll() v => not v.isNaN"
+---
+name:removeNull
+doc:
+  Removes null values from list or dict 'x'.
+  
+  Side effects: may rearrange dict key order.
+func
+overridable
+src:"(x) => x.findAll() v => v != null"
+---
+name:removeVal
+doc:
+  Remove any elements from list or dict 'x' that equal 'val'.
+  
+  Side effects: may rearrange dict key order.
+func
+overridable
+src:"(x, val) => x.findAll() v => v != val"
+---
+name:rep
+doc:
+  Replicate the value 'x' the specified number of 'times'. Returns a list.
+  
+  Examples:
+  
+    rep(1, 2)               >> [1,1]
+    rep("A", 3).concat("")  >> "AAA"
+func
+overridable
+src:
+  (x, times) => do
+    out: []
+    each(1..times, i => out = out.add(x))
+    return out
+  end
+---
+name:replace2
+doc:
+  Convenience wrapper for `replace` that also accepts uris, lists, and dicts.
+  
+  - If 'val' is a string, identical to `replace`
+  - If 'val' is a uri, it is coerced to string, modified, and re-parsed as a uri
+  - If 'val' is a list or dict, all its string and uri elements have the replacement applied following the rules above
+  
+  For lists and dicts, the string replacement is recursive.
+  
+  Examples:
+  
+    "hello".replace2("hell", "t")            >> "to"
+    `io/funcs.txt`.replace2("txt", "trio")   >> `io/funcs.trio`
+    {a:["b","c"], d:`b`}.replace2("b", "x")  >> {a:["x","c"], d:`x`}
+func
+overridable
+src:
+  (val, from, to) => do
+    // Convenience Uri replacement function
+    replaceUri: (v, f, t) => v.toStr.replace(f, t).parseUri
+  
+    // String
+    if (val.isStr) return val.replace(from, to)
+  
+    // Uri
+    if (val.isUri) return val.replaceUri(from, to)
+  
+    // Dict or List
+    if (val.isDict or val.isList) do
+      return val.map(v => replace2(v, from, to))
+    end
+  end
+---
+name:setDiff
+doc:
+  Returns the set difference of two lists or dicts 'a' and 'b': all elements of 'a' that are not in
+  'b'.
+  
+  For dicts, elements for removal are checked by name only. Values are ignored, including for
+  keys mapped to 'Remove.val'.
+  
+  Examples:
+  
+    setDiff([1, 2, 3],[2, 3, 4])  >> [1]
+    setDiff({a, b}, {a, c})       >> {b}
+    setDiff({a, b:1}, {b:2})      >> {a}
+    setDiff({a, b:1}, {-b})       >> {a}
+func
+overridable
+src:
+  (a, b) => do
+    // Lists
+    if(a.isList and b.isList) do
+      return a.findAll(v => not(b.contains(v))).unique
+  
+    // Dicts
+    else if(a.isDict and b.isDict) do
+      return a.findAll() (v, n) => not(b.has(n))
+  
+    // Other
+    else do
+      throw "Invalid arguments; need two lists or two dicts."
+    end
+  end
+---
+name:union
+doc:
+  Returns the set union of two lists or dicts 'a' and 'b'. Behavior for dicts differs by
+  'checked':
+  
+  - If 'checked == true', verifies that keys included in both 'a' and 'b' have matching values,
+    and throws an error on mismatch.
+  - If 'checked == false', values from 'a' override values from 'b'. This is similar to
+    'merge(b, a)' except that keys not mapped to 'Remove.val' always take precedence.
+  
+  Examples:
+  
+    union([1, 2, 3],[2, 3, 4])        >> [1, 2, 3, 4]
+    union({a, b}, {a, c})             >> {a, b, c}
+    union({a, b}, {-b, c}, false)     >> {a, b, c}
+    union({a, b:1}, {a, b:1})         >> {a, b:1}
+    union({a, b:1}, {a, b:2})         >> error
+    union({a, b:1}, {a, b:2}, false)  >> {a, b:1}
+func
+overridable
+src:
+  (a, b, checked:true) => do
+    // Lists
+    if(a.isList and b.isList) do
+      return a.addAll(b).unique
+  
+    // Dicts
+    else if(a.isDict and b.isDict) do
+      // Value matching
+      if (checked) do
+        b.names.each() n => do
+          if (a.has(n) and a[n] != b[n]) throw "Values do not match for key \"" + n + "\"."
+        end
+      end
+  
+      // Merge, without dropping values
+      return merge(merge(a, b), merge(b, a))
+  
+    // Other
+    else do
+      throw "Invalid arguments; need two lists or two dicts."
+    end
+  end

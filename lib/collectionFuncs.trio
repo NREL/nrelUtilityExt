@@ -1,36 +1,3 @@
-name:dictToFilter
-doc:
-  Transforms dict 'd' into a string compatible with `parseFilter`. The resulting filter string matches records with tags that include all the name-value pairs in 'd'.
-  
-  Notes
-  -----
-  
-  1. Handles any axon data type supported by `toAxonCode`. However, data types without an Axon literal (e.g. dateTimes) may cause downstream functions such as `parseFilter` to fail.
-  2. Dicts that contain reserved keywords as names, such as "return", will not throw an error but may cause downstream functions such as `parseFilter` to fail.
-  3. Null values in 'd' are removed.
-func
-overridable
-src:
-  (d) => do
-    // Remove nulls
-    d = d.removeNull
-    
-    // Map dict vals to axon code for filter
-    d = d.map() (v, n) => do
-      // Name
-      if (v == marker()) do
-        return n
-        
-      // Name-Value
-      else do
-        return n + "==" + v.toAxonCode
-      end
-    end
-    
-    // Collect, concatenate, and return
-    d.vals.concat(" and ")
-  end
----
 name:hasAll
 doc:
   Returns 'true' if 'x' has all the elements in 'names'.

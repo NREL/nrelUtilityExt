@@ -289,5 +289,7 @@ Other useful functions not discussed above:
 - `arity` returns the number of arguments a function accepts
 - `dictToFilter` transforms a dict into a string compatible with `parseFilter`
 - `pathToUri` converts a path list to a uri
+- `recDisWithId` returns a human-readable string combining a record's display
+  name and id
   
 For a complete list, see [the function listing]`ext-nrelUtility::index`.

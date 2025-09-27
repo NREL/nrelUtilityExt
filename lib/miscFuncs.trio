@@ -47,3 +47,10 @@ src:
     // Concatenate with "/" and convert to Uri
     path.concat("/").parseUri
   end
+---
+name:recDisWithId
+doc:"Return a record's display name and `id` as a [Str]`sys::Str` using the standard format: '"Display Name" (@id)'"
+func
+overridable
+src:
+  (rec) => "\"" + rec.dis + "\" (@" + rec->id.toStr + ")"

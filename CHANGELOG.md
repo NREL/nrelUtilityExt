@@ -13,6 +13,11 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 ### Changed
 
 - Reorganized functions into multiple package files for easier maintenance
+- Reorganized documentation to group more functions by category
+
+### Removed
+
+- `parseRef2()` (deprecated and no longer needed)
 
 ## [v2.1.0] (2022-11-13)
 

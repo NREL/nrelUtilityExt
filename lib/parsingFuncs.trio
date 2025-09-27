@@ -171,18 +171,3 @@ src:
       return null
     end
   end
----
-name:parseRef2
-func
-doc:
-  **Deprecated**; in SkySpark 3.1.2+, `parseRef` already strips leading "@".
-  
-  Convenience wrapper for `parseRef` that supports leading "@" without throwing error.
-src:
-  (val, checked:true) => do
-    logWarn(
-      {name:"nrelUtility", funcTrace:"parseRef2"},
-      "parseRef2() is deprecated and will be removed a future release."
-    )
-    if (val.startsWith("@")) parseRef(val[1..-1], checked) else parseRef(val, checked)
-  end

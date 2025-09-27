@@ -3,12 +3,19 @@ Overview [#over]
 
 The NREL Utility extension provides a variety of missing utility functions for the Axon programming language. Most functions are `overridable`. See the **nrelUtilityExt** [Github repository]`https://github.com/NREL/nrelUtilityExt/` for important [release notes]`https://github.com/NREL/nrelUtilityExt/releases` and a [change log]`https://github.com/NREL/nrelUtilityExt/blob/main/CHANGELOG.md`. Please report issues [here]`https://github.com/NREL/nrelUtilityExt/issues`.
 
-Set Operations [#setops]
-************************
+Collection Functions [#collections]
+***********************************
 
-The `union`, `intersect`, and `setDiff` functions provide set operations for lists and
-dicts modeled on the equivalent functions in the
-[R programming language]`https://www.r-project.org/`. They complement the core function `merge`.
+Functions to analyze and manipulate collections (i.e. lists and dicts):
+
+- `in` complements `contains`.
+- `hasAny` and `hasAll` are extensions of `has` to multiple keys.
+- `removeNA`, `removeNaN`, `removeNull`, and `removeVal` remove NAs, NaNs,
+  nulls, or specific values from a list or dict.
+- `rep` repeats a value to create a list.
+- `union`, `intersect`, and `setDiff` provide set operations for lists and dicts
+  modeled on the equivalent functions in the [R programming language]`https://www.r-project.org/`.
+  They complement the core function `merge`.
 
 SQL-Style Grid Joins [#joins]
 *****************************
@@ -201,8 +208,13 @@ Things get more interesting if we omit "state" from the join columns.
 
 *In practice, this particular case isn't very useful because the state-population match is now wrong.*
 
+Data Manipulation Functions [#datamanip]
+****************************************
+
+Various functions to check and parse data types.
+
 Parsing Functions [#parsing]
-****************************
+============================
 
 Additional text parsing functions to complement the core 'parse*' functions:
 
@@ -212,6 +224,13 @@ Additional text parsing functions to complement the core 'parse*' functions:
 - `parseList`
 
 These now use regex and/or wrap `ioReadZinc`, so they should be safe to use on arbitrary input text.
+
+Type Checking Functions [#typechecking]
+=======================================
+
+Additional 'is*' funtions that check for specific data types:
+
+- `isNA`
 
 Date Range Functions [#daterange]
 *********************************
@@ -231,6 +250,24 @@ user-specified time span:
 - `toYearList`
 - `toFiscalYearList`
 
+Other:
+
+- `tomorrow` complements `today` and `yesterday`
+
+Mathematical Calculations [#math]
+*********************************
+
+Fold functions:
+
+- `andAll` and `orAll` (logical folds for Boolean values)
+- `product`
+
+Useful calculations:
+
+- `nmbe` and `cvrmse` calculate the normalized mean bias error (NBME) and coefficient of variation of
+  the root-mean-square error (CV[RMSE]) per ASHRAE Guideline 14
+
+
 Function Import and Export [#importexport]
 ******************************************
 
@@ -244,14 +281,10 @@ Options are available to filter, sort, and add or remove tags to imported and ex
 Other Useful Stuff [#otherstuff]
 ********************************
 
-A brief sampling of other useful functions:
+Other useful functions not discussed above:
 
-- `nmbe` and `cvrmse` calculate the normalized mean bias error (NBME) and coefficient of variation of
-  the root-mean-square error (CV[RMSE]) per ASHRAE Guideline 14
-- `hasAny` and `hasAll` are extensions of `has` to multiple keys
-- `isNA` complements `isNull`, `isNaN`, and the various other core 'is*' funtions
-- `removeNA`, `removeNaN`, `removeNull`, and `removeVal` remove NAs, NaNs, nulls, or specific values
-  from a list or dict
-- `tomorrow` complements `today` and `yesterday`
+- `arity` returns the number of arguments a function accepts
+- `dictToFilter` transforms a dict into a string compatible with `parseFilter`
+- `pathToUri` converts a path list to a uri
   
 For a complete list, see [the function listing]`ext-nrelUtility::index`.

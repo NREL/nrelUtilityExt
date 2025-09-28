@@ -33,7 +33,7 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 
 ### Removed
 
-- `parseRef2()` (deprecated and no longer needed)
+- `parseRef2()` (deprecated since 2022 and no longer needed)
 
 ## [v2.1.0] (2022-11-13)
 

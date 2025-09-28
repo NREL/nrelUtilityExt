@@ -10,11 +10,22 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 
 [View Changes](https://github.com/NREL/nrelUtilityExt/compare/main...develop)
 
+### Added
+
+- `isMarker()` and `isRemove()` return whether an object is a marker or the
+  remove singleton, respectively
+- `keep()` keeps only the specified items from a collection.
+- `recDisWithId()` returns a human-readable string combining a record's display
+  name and id
+- New folds: `firstVal()`, `lastVal()`, `oldest()`, `newest()`
+- New rounding functions: `roundTo()` and `roundPlaces()`
+
 ### Changed
 
+- `parseAuto()` now trims leading and trailing white space before parsing
 - Reorganized functions into multiple package files for easier maintenance
 - Reorganized documentation to group more functions by category
-- `parseAuto()` now trims leading and trailing white space before parsing
+- Miscellaneous function documentation improvements
 
 ### Fixed
 
@@ -22,7 +33,7 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 
 ### Removed
 
-- `parseRef2()` (deprecated and no longer needed)
+- `parseRef2()` (deprecated since 2022 and no longer needed)
 
 ## [v2.1.0] (2022-11-13)
 

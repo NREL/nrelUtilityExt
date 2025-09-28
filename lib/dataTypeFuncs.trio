@@ -1,5 +1,17 @@
+name:isMarker
+doc:"Returns if 'val' is a [Marker]`haystack::Marker`."
+func
+overridable
+src:"(val) => val == marker()"
+---
 name:isNA
-doc:"Returns 'true' if 'val' equals `haystack::NA`, 'false' otherwise."
+doc:"Returns if 'val' is `haystack::NA` (not available)."
 func
 overridable
 src:"(val) => val == na()"
+---
+name:isRemove
+doc:"Returns if 'val' is the [Remove]`haystack::Remove` singleton."
+func
+overridable
+src:"(val) => val == removeMarker()"

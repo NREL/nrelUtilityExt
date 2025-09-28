@@ -9,13 +9,21 @@ Collection Functions [#collections]
 Functions to analyze and manipulate collections (i.e. lists and dicts):
 
 - `in` complements `contains`.
-- `hasAny` and `hasAll` are extensions of `has` to multiple keys.
+- `hasAny` and `hasAll` extend `has` to multiple keys.
+- `keep` is the equivalent of `keepCols` for lists and dicts.
 - `removeNA`, `removeNaN`, `removeNull`, and `removeVal` remove NAs, NaNs,
   nulls, or specific values from a list or dict.
 - `rep` repeats a value to create a list.
-- `union`, `intersect`, and `setDiff` provide set operations for lists and dicts
-  modeled on the equivalent functions in the [R programming language]`https://www.r-project.org/`.
-  They complement the core function `merge`.
+
+Set operations:
+
+- `union`
+- `intersect`
+- `setDiff`
+
+These provide set operations for lists and dict modeled on the equivalent
+functions in the [R programming language]`https://www.r-project.org/`. They
+complement the core function `merge`.
 
 SQL-Style Grid Joins [#joins]
 *****************************
@@ -230,6 +238,8 @@ Type Checking Functions [#typechecking]
 
 Additional 'is*' funtions that check for specific data types:
 
+- `isMarker`
+- `isRemove`
 - `isNA`
 
 Date Range Functions [#daterange]
@@ -260,13 +270,17 @@ Mathematical Calculations [#math]
 Fold functions:
 
 - `andAll` and `orAll` (logical folds for Boolean values)
+- `firstVal` and `lastVal`
+- `oldest` and `newest`
 - `product`
 
 Useful calculations:
 
-- `nmbe` and `cvrmse` calculate the normalized mean bias error (NBME) and coefficient of variation of
-  the root-mean-square error (CV[RMSE]) per ASHRAE Guideline 14
-
+- `nmbe` and `cvrmse` calculate the normalized mean bias error (NBME) and the
+  coefficient of variation of the root-mean-square error (CV[RMSE]) per ASHRAE
+  Guideline 14
+- `roundTo` and `roundPlaces` round numbers to a desired precision or number of
+  decimal places
 
 Function Import and Export [#importexport]
 ******************************************
@@ -286,5 +300,7 @@ Other useful functions not discussed above:
 - `arity` returns the number of arguments a function accepts
 - `dictToFilter` transforms a dict into a string compatible with `parseFilter`
 - `pathToUri` converts a path list to a uri
+- `recDisWithId` returns a human-readable string combining a record's display
+  name and id
   
 For a complete list, see [the function listing]`ext-nrelUtility::index`.

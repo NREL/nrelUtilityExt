@@ -1,5 +1,58 @@
 /// Automated tests to implement in the future ///
 
+// is* //
+d: {a, -b, c:na()}
+
+isMarker(d->a)  // True
+isMarker(d->b)  // False
+isMarker(d->c)  // False
+
+isRemove(d->a)  // False
+isRemove(d->b)  // True
+isRemove(d->c)  // False
+
+isNA(d->a)  // False
+isNA(d->b)  // False
+isNA(d->c)  // True
+
+// keep //
+keep([0, 1, 2, 3], 1)       // [1]
+keep([0, 1, 2, 3], [3, 2])  // [2, 3]
+keep([0, 1, 2, 3], 4)       // []
+
+keep({a, b, c}, "a")         // {a}
+keep({a, b, c}, ["c", "b"])  // {b, c}
+keep({a, b, c}, "d")         // {}
+
+// folds //
+fold([true, true, false], orAll)    // true
+fold([false, false, false], orAll)  // false
+
+fold([true, true, false], andAll)   // false
+fold([true, true, true], andAll)    // true
+
+fold([null, 1, 2, 3], firstVal)     // 1
+fold([1, 2, 3, null], lastVal)      // 3
+
+// history folds //
+d: [
+  {ts: dateTime(2021-02-03, time(4,5)), v0: 1},
+  {ts: dateTime(2021-02-03, time(4,6)), v0: 2},
+  {ts: dateTime(2021-02-03, time(4,7)), v0: 3}
+].toGrid
+
+d.hisRollup(oldest, "*")  // 1
+d.hisRollup(newest, "*")  // 3
+
+// rounding //
+roundTo(12.345kW, 10)    // 10 kW
+roundTo(12.345kW, 2kW)   // 12 kW 
+roundTo(12.345kW, 0.2)   // 12.4 kW 
+roundTo(12.345kW, 100W)  // 12.3 kW
+
+roundPlaces(12.345kW, 1)   // 12.3 kW 
+roundPlaces(12.345kW, -1)  // 10 kW 
+
 // parsing functions //
 parseAuto("2kW")                // 2kW              // Number
 parseAuto("+INF")               // ∞                // Number
@@ -7,3 +60,4 @@ parseAuto("{foo bar:\"baz\"}")  // {foo, bar:"baz"} // Dict
 parseAuto("[1, 2, 5]")          // [1, 2, 5]        // List
 parseAuto("\"Three sir!\"")     // "Three sir!"     // Str
 parseAuto(" ")                  // null
+

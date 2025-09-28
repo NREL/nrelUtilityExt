@@ -110,6 +110,26 @@ src:
     end
   end
 ---
+name:keep
+doc:
+  Keep only the selected 'keys' (items) from a collection.
+  
+  - List: 'keys' are indices
+  - Dict: 'keys' are tag names
+func
+overridable
+src:
+  (val, keys) => do
+    keys = keys.toList
+    if (val.isList) do
+      val.findAll() (v, i) => keys.contains(i)
+    else if (val.isDict) do
+      val.findAll() (v, n) => keys.contains(n)
+    else do
+      throw "Invalid data type " + debugType(val) + " for 'val'; must be list or dict."
+    end
+  end
+---
 name:removeNA
 doc:
   Removes NA values from list or dict 'x'.

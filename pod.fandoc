@@ -14,9 +14,16 @@ Functions to analyze and manipulate collections (i.e. lists and dicts):
 - `removeNA`, `removeNaN`, `removeNull`, and `removeVal` remove NAs, NaNs,
   nulls, or specific values from a list or dict.
 - `rep` repeats a value to create a list.
-- `union`, `intersect`, and `setDiff` provide set operations for lists and dicts
-  modeled on the equivalent functions in the [R programming language]`https://www.r-project.org/`.
-  They complement the core function `merge`.
+
+Set operations:
+
+- `union`
+- `intersect`
+- `setDiff`
+
+These provide set operations for lists and dict modeled on the equivalent
+functions in the [R programming language]`https://www.r-project.org/`. They
+complement the core function `merge`.
 
 SQL-Style Grid Joins [#joins]
 *****************************

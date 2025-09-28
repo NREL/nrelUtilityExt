@@ -3,7 +3,7 @@ doc:"Fold function to apply logical AND to a set of Boolean values. Return 'null
 func
 overridable
 src:
-  (val, acc) => do 
+  (val, acc) => do
     // Start
     if (val == foldStart()) do
       return null
@@ -24,12 +24,120 @@ src:
     end
   end
 ---
+name:firstVal
+doc:"Fold function to return first non-null value. Return 'null' if no values."
+func
+overridable
+src:
+  (val, acc) => do
+    // Start
+    if (val == foldStart()) do
+      return null
+  
+    // End
+    else if (val == foldEnd()) do
+      return acc
+  
+    // Accumulate: first non-null value
+    else if (acc == null) do
+      return val
+    else do
+      return acc
+    end
+  end
+---
+name:lastVal
+doc:"Fold function to return last non-null value. Return 'null' if no values."
+func
+overridable
+src:
+  (val, acc) => do
+    // Start
+    if (val == foldStart()) do
+      return null
+  
+    // End
+    else if (val == foldEnd()) do
+      return acc
+  
+    // Accumulate: last non-null value
+    else if (val != null) do
+      return val
+    else do
+      return acc
+    end
+  end
+---
+name:newest
+doc:"History fold function to return newest value. Return 'null' if no values."
+func
+overridable
+src:
+  (val, ts, acc) => do
+    // Start
+    if (val == foldStart()) do
+      return null
+  
+    // End
+    else if (val == foldEnd()) do
+      if (acc != null) do
+        return acc->val
+      else do
+        return null
+      end
+  
+    // Skip null
+    else if (val == null) do
+      return acc
+  
+    // Accumulate: newer only
+    else if (acc == null) do
+      return {ts:ts, val:val}
+    else if (ts >= acc->ts) do
+      return {ts:ts, val:val}
+    else do
+      return acc
+    end
+  end
+---
+name:oldest
+doc:"History fold function to return oldest value. Return 'null' if no values."
+func
+overridable
+src:
+  (val, ts, acc) => do
+    // Start
+    if (val == foldStart()) do
+      return null
+  
+    // End
+    else if (val == foldEnd()) do
+      if (acc != null) do
+        return acc->val
+      else do
+        return null
+      end
+  
+    // Skip null
+    else if (val == null) do
+      return acc
+  
+    // Accumulate: newer only
+    else if (acc == null) do
+      return {ts:ts, val:val}
+    else if (ts < acc->ts) do
+      return {ts:ts, val:val}
+    else do
+      return acc
+    end
+  end
+---
 name:orAll
 doc:"Fold function to apply logical OR to a set of Boolean values. Return 'null' if no values."
 func
 overridable
 src:
-  (val, acc) => do 
+  (val, acc) => do
     // Start
     if (val == foldStart()) do
       return null
@@ -55,7 +163,7 @@ doc:"Fold multiple values into their numeric product. Return 'null' if no values
 func
 overridable
 src:
-  (val, acc) => do 
+  (val, acc) => do
     // Start
     if (val == foldStart()) do
       return null

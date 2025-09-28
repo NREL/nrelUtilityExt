@@ -23,3 +23,23 @@ keep([0, 1, 2, 3], 4)       // []
 keep({a, b, c}, "a")         // {a}
 keep({a, b, c}, ["c", "b"])  // {b, c}
 keep({a, b, c}, "d")         // {}
+
+// folds //
+fold([true, true, false], orAll)    // true
+fold([false, false, false], orAll)  // false
+
+fold([true, true, false], andAll)   // false
+fold([true, true, true], andAll)    // true
+
+fold([null, 1, 2, 3], firstVal)     // 1
+fold([1, 2, 3, null], lastVal)      // 3
+
+// history folds //
+d: [
+  {ts: dateTime(2021-02-03, time(4,5)), v0: 1},
+  {ts: dateTime(2021-02-03, time(4,6)), v0: 2},
+  {ts: dateTime(2021-02-03, time(4,7)), v0: 3}
+].toGrid
+
+d.hisRollup(oldest, "*")  // 1
+d.hisRollup(newest, "*")  // 3

@@ -17,6 +17,7 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 - `keep()` keeps only the specified items from a collection.
 - `recDisWithId()` returns a human-readable string combining a record's display
   name and id
+- New folds: `firstVal()`, `lastVal()`, `oldest()`, `newest()`
 
 ### Changed
 

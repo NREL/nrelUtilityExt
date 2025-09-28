@@ -263,6 +263,8 @@ Mathematical Calculations [#math]
 Fold functions:
 
 - `andAll` and `orAll` (logical folds for Boolean values)
+- `firstVal` and `lastVal`
+- `oldest` and `newest`
 - `product`
 
 Useful calculations:

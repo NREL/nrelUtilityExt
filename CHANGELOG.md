@@ -22,9 +22,14 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 
 ### Changed
 
+- `parseAuto()` now trims leading and trailing white space before parsing
 - Reorganized functions into multiple package files for easier maintenance
 - Reorganized documentation to group more functions by category
 - Miscellaneous function documentation improvements
+
+### Fixed
+
+- `parseAuto()` now returns Null on empty string instead of an error
 
 ### Removed
 

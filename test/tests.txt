@@ -1,0 +1,9 @@
+/// Automated tests to implement in the future ///
+
+// parsing functions //
+parseAuto("2kW")                // 2kW              // Number
+parseAuto("+INF")               // ∞                // Number
+parseAuto("{foo bar:\"baz\"}")  // {foo, bar:"baz"} // Dict
+parseAuto("[1, 2, 5]")          // [1, 2, 5]        // List
+parseAuto("\"Three sir!\"")     // "Three sir!"     // Str
+parseAuto(" ")                  // null

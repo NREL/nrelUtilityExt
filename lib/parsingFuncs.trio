@@ -1,6 +1,6 @@
 name:parseAuto
 doc:
-  Parse a `sys::Str` 'val', automatically guessing its data type. Supports all `docHaystack::Zinc` data types plus the following keywords:
+  Parse a [Str]`sys::Str` 'val', automatically guessing its data type. Supports all `docHaystack::Zinc` data types plus the following keywords:
   
   - True: 'true', 'True', or 'TRUE' (as Bool)
   - False: 'false', 'False', or 'FALSE' (as Bool)
@@ -12,7 +12,20 @@ doc:
   
   For everything else, this function wraps `ioReadZinc`. The resulting parsing behavior supports most basic [Axon]`docHaxall::AxonLang` data types, but ranges, triple-quoted string literals, and raw string literals are not supported.
   
-  If parsing fails and 'checked' is 'false' returns null; otherwise throws an error.
+  Implementation Notes:
+  
+  - Leading and trailing white space characters are trimmed prior to parsing
+  - Returns null if 'val' is an empty string
+  - If parsing fails and 'checked' is 'false' returns null; otherwise throws an error.
+  
+  Examples:
+  
+    parseAuto("2kW")                >> 2kW              // Number
+    parseAuto("+INF")               >> ∞                // Number
+    parseAuto("{foo bar:\"baz\"}")  >> {foo, bar:"baz"} // Dict
+    parseAuto("[1, 2, 5]")          >> [1, 2, 5]        // List
+    parseAuto("\"Three sir!\"")     >> "Three sir!"     // Str
+    parseAuto(" ")                  >> null
 func
 overridable
 src:
@@ -22,7 +35,13 @@ src:
       // Check input
       if (not val.isStr) throw "'val' must a string."
       if (val.contains("\n")) throw "'val' must not contain newline characters."
-  
+      
+      // Trim
+      val = val.trim
+    
+      // Empty string
+      if (val.isEmpty) return null
+      
       // Keywords: True, False, Null, NA, NaN, +Inf, -Inf
       if (val == "true"  or val == "True"  or val == "TRUE" ) return true
       if (val == "false" or val == "False" or val == "FALSE") return false
@@ -31,18 +50,15 @@ src:
       if (val == "nan"   or val == "NaN"   or val == "NAN"  ) return nan()
       if (val == "+inf"  or val == "+Inf"  or val == "+INF" ) return posInf()
       if (val == "-inf"  or val == "-Inf"  or val == "-INF" ) return negInf()
-  
+
       // Parse using ZINC grammar
       return ioReadZinc("ver:\"3.0\"\nval\n" + val).first["val"] 
-    
+
     // Catch block
     catch (ex) do
       if (checked) throw (ex)
       return null
     end
-    
-    // TO DO: Unit test(s)
-    // parseAuto("{a, b:0kW, c:[1, 2, 5], d:\"Three sir!\", e:{foo bar:\"baz\"}}")
   end
 ---
 name:parseCoord

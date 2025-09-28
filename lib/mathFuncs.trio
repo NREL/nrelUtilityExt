@@ -53,3 +53,31 @@ src:
     // Return dimensionless
     out.as("")
   end
+---
+name:roundPlaces
+doc:"Round 'x' to the specified number of decimal 'places'. The result has the same units as 'x'."
+func
+overridable
+src:
+  (x, places) => do
+    if (places.unit != null) do
+      throw "Places must be unitless"
+    end
+    roundTo(x, pow(10, places * -1))
+  end
+---
+name:roundTo
+doc:"Round 'x' to the specified 'precision'. The result has the same units as 'x'."
+func
+overridable
+src:
+  (x, precision) => do
+    if (precision.unit != null) do
+      try do
+        precision = precision.to(x).as("")
+      catch (ex) do
+        throw "Precision must be either unitless or convertible to the units of x"
+      end
+    end
+    round(x / precision) * precision
+  end

@@ -276,9 +276,11 @@ Fold functions:
 
 Useful calculations:
 
-- `nmbe` and `cvrmse` calculate the normalized mean bias error (NBME) and coefficient of variation of
-  the root-mean-square error (CV[RMSE]) per ASHRAE Guideline 14
-
+- `nmbe` and `cvrmse` calculate the normalized mean bias error (NBME) and the
+  coefficient of variation of the root-mean-square error (CV[RMSE]) per ASHRAE
+  Guideline 14
+- `roundTo` and `roundPlaces` round numbers to a desired precision or number of
+  decimal places
 
 Function Import and Export [#importexport]
 ******************************************

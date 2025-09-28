@@ -43,3 +43,12 @@ d: [
 
 d.hisRollup(oldest, "*")  // 1
 d.hisRollup(newest, "*")  // 3
+
+// rounding //
+roundTo(12.345kW, 10)    // 10 kW
+roundTo(12.345kW, 2kW)   // 12 kW 
+roundTo(12.345kW, 0.2)   // 12.4 kW 
+roundTo(12.345kW, 100W)  // 12.3 kW
+
+roundPlaces(12.345kW, 1)   // 12.3 kW 
+roundPlaces(12.345kW, -1)  // 10 kW 

@@ -18,6 +18,7 @@ This file tracks notable changes to **nrelUtilityExt**. The format is based on
 - `recDisWithId()` returns a human-readable string combining a record's display
   name and id
 - New folds: `firstVal()`, `lastVal()`, `oldest()`, `newest()`
+- New rounding functions: `roundTo()` and `roundPlaces()`
 
 ### Changed
 
